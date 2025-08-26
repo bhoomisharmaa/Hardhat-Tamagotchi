@@ -35,7 +35,6 @@ contract Tamagotchi is ERC721 {
 
     //Variables
     uint256 private s_tokenCounter;
-
     string private s_happyImageUri;
     string private s_sadImageUri;
     string private s_neutralImageUri;
@@ -87,6 +86,9 @@ contract Tamagotchi is ERC721 {
 
     function mintNft() public {
         _safeMint(msg.sender, s_tokenCounter);
+        s_tokenIdToPetStage[s_tokenCounter] = PetStage.BABY;
+        s_tokenIdToPetsAge[s_tokenCounter] = 0;
+        chooseState(s_tokenCounter);
         s_tokenCounter++;
         emit NftMinted(msg.sender, s_tokenCounter - 1);
     }
