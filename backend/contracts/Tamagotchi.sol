@@ -51,6 +51,8 @@ contract Tamagotchi is ERC721 {
     mapping(uint256 => uint256) s_tokenIdToFun;
     mapping(uint256 => uint256) s_tokenIdToHygiene;
     mapping(uint256 => uint256) s_tokenIdToEnergy;
+    mapping(uint256 => uint256) s_tokenIdToMintTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToLastTimestamp;
 
     //modifiers
     modifier onlyAuthorizedPersons(uint256 tokenId) {
@@ -88,6 +90,8 @@ contract Tamagotchi is ERC721 {
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenIdToPetStage[s_tokenCounter] = PetStage.BABY;
         s_tokenIdToPetsAge[s_tokenCounter] = 0;
+        s_tokenIdToMintTimestamp[s_tokenCounter] = block.timestamp;
+        s_tokenIdToLastTimestamp[s_tokenCounter] = block.timestamp;
         chooseState(s_tokenCounter);
         s_tokenCounter++;
         emit NftMinted(msg.sender, s_tokenCounter - 1);
