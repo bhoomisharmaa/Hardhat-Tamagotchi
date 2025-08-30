@@ -118,9 +118,27 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenIdToPetStage[s_tokenCounter] = PetStage.BABY;
         s_tokenIdToPetsAge[s_tokenCounter] = 0;
-        s_tokenIdToMintTimestamp[s_tokenCounter] = block.timestamp;
-        s_tokenIdToLastTimestamp[s_tokenCounter] = block.timestamp;
-        s_tokenIdToPetState[s_tokenCounter] = _chooseState(s_tokenCounter);
+
+        uint256 lastTimestamp = block.timestamp;
+
+        // last timestamp for each state
+        s_tokenIdToMintTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToHungerLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToHappinessLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToEnerygyLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToFunLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToHygieneLastTimestamp[s_tokenCounter] = lastTimestamp;
+
+        //attributes
+        s_tokenIdToHunger[s_tokenCounter] = 30;
+        s_tokenIdToHappiness[s_tokenCounter] = 70;
+        s_tokenIdToEnergy[s_tokenCounter] = 70;
+        s_tokenIdToHygiene[s_tokenCounter] = 20;
+        s_tokenIdToFun[s_tokenCounter] = 70;
+
+        s_tokenIdToPetState[s_tokenCounter] = PetState.STINKY;
+
         s_tokenCounter++;
         emit NftMinted(msg.sender, s_tokenCounter - 1);
     }
