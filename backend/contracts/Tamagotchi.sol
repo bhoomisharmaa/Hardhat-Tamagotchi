@@ -3,8 +3,9 @@ pragma solidity 0.8.28;
 import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
+import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
 
-contract Tamagotchi is ERC721 {
+contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     // enums
     enum PetStage {
         BABY,
@@ -32,9 +33,18 @@ contract Tamagotchi is ERC721 {
     //errors
     error Tamagotchi__NotAuthorized();
     error Tamagotchi__NotValidToken();
+    error Tamagotchi__UpkeepNotNeeded();
 
     //Variables
     uint256 private s_tokenCounter;
+    uint256 private immutable i_interval;
+    uint256 private s_lastTimeStamp;
+    uint256 private immutable i_hungerDecayInterval;
+    uint256 private immutable i_happinessDecayInterval;
+    uint256 private immutable i_energyDecayInterval;
+    uint256 private immutable i_funDecayInterval;
+    uint256 private immutable i_hygieneDecayInterval;
+
     string private s_happyImageUri;
     string private s_sadImageUri;
     string private s_neutralImageUri;
@@ -53,6 +63,11 @@ contract Tamagotchi is ERC721 {
     mapping(uint256 => uint256) s_tokenIdToEnergy;
     mapping(uint256 => uint256) s_tokenIdToMintTimestamp;
     mapping(uint256 => uint256) s_tokenIdToLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToHungerLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToHappinessLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToFunLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToEnerygyLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToHygieneLastTimestamp;
 
     //modifiers
     modifier onlyAuthorizedPersons(uint256 tokenId) {
@@ -68,6 +83,12 @@ contract Tamagotchi is ERC721 {
     }
 
     constructor(
+        uint256 interval,
+        uint256 hungerDecayInterval,
+        uint256 happinessDecayInterval,
+        uint256 energyDecayInterval,
+        uint256 funDecayInterval,
+        uint256 hygieneDecayInterval,
         string memory happyImageUri,
         string memory sadImageUri,
         string memory neutralImageUri,
@@ -76,6 +97,13 @@ contract Tamagotchi is ERC721 {
         string memory stinkyImageUri,
         string memory lethargicImageUri
     ) ERC721("Tamagotchi", "TMG") {
+        i_interval = interval;
+        i_hungerDecayInterval = hungerDecayInterval;
+        i_happinessDecayInterval = happinessDecayInterval;
+        i_energyDecayInterval = energyDecayInterval;
+        i_funDecayInterval = funDecayInterval;
+        i_hygieneDecayInterval = hygieneDecayInterval;
+        s_lastTimeStamp = block.timestamp;
         s_tokenCounter = 0;
         s_happyImageUri = happyImageUri;
         s_sadImageUri = sadImageUri;
@@ -97,6 +125,77 @@ contract Tamagotchi is ERC721 {
         emit NftMinted(msg.sender, s_tokenCounter - 1);
     }
 
+    function checkUpkeep(
+        bytes calldata
+    ) external view override returns (bool upkeepNeeded, bytes memory) {
+        upkeepNeeded = (block.timestamp - s_lastTimeStamp) > i_interval;
+    }
+
+    function performUpkeep(bytes calldata) external override {
+        if (block.timestamp - s_lastTimeStamp <= i_interval)
+            revert Tamagotchi__UpkeepNotNeeded();
+
+        s_lastTimeStamp = block.timestamp;
+
+        for (uint256 i = 0; i < s_tokenCounter; i++) {
+            // HUNGER
+            _applyDecay(
+                i,
+                i_hungerDecayInterval,
+                s_tokenIdToHungerLastTimestamp,
+                s_tokenIdToHunger
+            );
+
+            // HAPPINESS
+            _applyDecay(
+                i,
+                i_happinessDecayInterval,
+                s_tokenIdToHappinessLastTimestamp,
+                s_tokenIdToHappiness
+            );
+
+            // ENERGY
+            _applyDecay(
+                i,
+                i_energyDecayInterval,
+                s_tokenIdToEnerygyLastTimestamp,
+                s_tokenIdToEnergy
+            );
+
+            // FUN
+            _applyDecay(
+                i,
+                i_funDecayInterval,
+                s_tokenIdToFunLastTimestamp,
+                s_tokenIdToFun
+            );
+
+            // HYGIENE
+            _applyDecay(
+                i,
+                i_hygieneDecayInterval,
+                s_tokenIdToHygieneLastTimestamp,
+                s_tokenIdToHygiene
+            );
+
+            chooseState(i);
+        }
+    }
+
+    function _applyDecay(
+        uint256 tokenId,
+        uint256 interval,
+        mapping(uint256 => uint256) storage lastTimestamp,
+        mapping(uint256 => uint256) storage stateLevel
+    ) internal {
+        uint256 lastStamp = lastTimestamp[tokenId];
+        if ((block.timestamp - lastStamp) > interval) {
+            uint256 decay = (30 * (block.timestamp - lastStamp)) / interval;
+            stateLevel[tokenId] = _max(stateLevel[tokenId] - decay, 0);
+            lastTimestamp[tokenId] = block.timestamp;
+        }
+    }
+
     function chooseState(uint256 tokenId) public {
         if (s_tokenIdToHunger[tokenId] <= 30)
             s_tokenIdToPetState[tokenId] = PetState.HUNGRY;
@@ -115,13 +214,17 @@ contract Tamagotchi is ERC721 {
         else s_tokenIdToPetState[tokenId] = PetState.HAPPY;
     }
 
+    function _max(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a >= b) return a;
+        else return b;
+    }
+
     function feed(
         uint256 tokenId
     ) public onlyAuthorizedPersons(tokenId) isValidToken(tokenId) {
         s_tokenIdToHunger[tokenId] = s_tokenIdToHunger[tokenId] + 30 <= 100
             ? s_tokenIdToHunger[tokenId] + 30
             : 100;
-
         chooseState(tokenId);
         emit Feeding(msg.sender, tokenId, s_tokenIdToHunger[tokenId]);
     }
