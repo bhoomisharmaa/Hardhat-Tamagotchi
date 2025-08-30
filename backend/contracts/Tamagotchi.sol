@@ -120,7 +120,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToPetsAge[s_tokenCounter] = 0;
         s_tokenIdToMintTimestamp[s_tokenCounter] = block.timestamp;
         s_tokenIdToLastTimestamp[s_tokenCounter] = block.timestamp;
-        chooseState(s_tokenCounter);
+        s_tokenIdToPetState[s_tokenCounter] = _chooseState(s_tokenCounter);
         s_tokenCounter++;
         emit NftMinted(msg.sender, s_tokenCounter - 1);
     }
@@ -178,7 +178,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
                 s_tokenIdToHygiene
             );
 
-            chooseState(i);
+            s_tokenIdToPetState[i] = _chooseState(i);
         }
     }
 
@@ -196,22 +196,42 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         }
     }
 
-    function chooseState(uint256 tokenId) public {
-        if (s_tokenIdToHunger[tokenId] <= 30)
-            s_tokenIdToPetState[tokenId] = PetState.HUNGRY;
-        else if (s_tokenIdToHappiness[tokenId] <= 30)
-            s_tokenIdToPetState[tokenId] = PetState.SAD;
-        else if (s_tokenIdToEnergy[tokenId] <= 40)
-            s_tokenIdToPetState[tokenId] = PetState.LETHARGIC;
-        else if (s_tokenIdToFun[tokenId] <= 30)
-            s_tokenIdToPetState[tokenId] = PetState.BORED;
-        else if (s_tokenIdToHygiene[tokenId] <= 40)
-            s_tokenIdToPetState[tokenId] = PetState.STINKY;
-        else if (
-            s_tokenIdToHappiness[tokenId] > 40 &&
-            s_tokenIdToHappiness[tokenId] <= 60
-        ) s_tokenIdToPetState[tokenId] = PetState.NEUTRAL;
-        else s_tokenIdToPetState[tokenId] = PetState.HAPPY;
+    function _chooseState(uint256 tokenId) internal view returns (PetState) {
+        uint256 hunger = s_tokenIdToHunger[tokenId];
+        uint256 happiness = s_tokenIdToHappiness[tokenId];
+        uint256 energy = s_tokenIdToEnergy[tokenId];
+        uint256 fun = s_tokenIdToFun[tokenId];
+        uint256 hygiene = s_tokenIdToHygiene[tokenId];
+        uint256 minimumLevel = 100;
+
+        PetState chosenState = PetState.HAPPY;
+
+        if (hunger <= 30 && hunger < minimumLevel) {
+            minimumLevel = hunger;
+            chosenState = PetState.HUNGRY;
+        }
+        if (happiness <= 30 && happiness < minimumLevel) {
+            minimumLevel = happiness;
+            chosenState = PetState.SAD;
+        }
+        if (energy <= 40 && energy < minimumLevel) {
+            minimumLevel = energy;
+            chosenState = PetState.LETHARGIC;
+        }
+        if (fun <= 30 && fun < minimumLevel) {
+            minimumLevel = fun;
+            chosenState = PetState.BORED;
+        }
+        if (hygiene <= 40 && hygiene < minimumLevel) {
+            minimumLevel = hygiene;
+            chosenState = PetState.STINKY;
+        }
+        if (happiness > 40 && happiness <= 60 && happiness < minimumLevel) {
+            minimumLevel = s_tokenIdToHappiness[tokenId];
+            chosenState = PetState.NEUTRAL;
+        }
+
+        return chosenState;
     }
 
     function _max(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -225,7 +245,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToHunger[tokenId] = s_tokenIdToHunger[tokenId] + 30 <= 100
             ? s_tokenIdToHunger[tokenId] + 30
             : 100;
-        chooseState(tokenId);
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Feeding(msg.sender, tokenId, s_tokenIdToHunger[tokenId]);
     }
 
@@ -235,7 +255,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToFun[tokenId] = s_tokenIdToFun[tokenId] + 30 <= 100
             ? s_tokenIdToFun[tokenId] + 30
             : 100;
-        chooseState(tokenId);
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Playing(msg.sender, tokenId, s_tokenIdToFun[tokenId]);
     }
 
@@ -245,7 +265,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToHygiene[tokenId] = s_tokenIdToHygiene[tokenId] + 30 <= 100
             ? s_tokenIdToHygiene[tokenId] + 30
             : 100;
-        chooseState(tokenId);
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Bathing(msg.sender, tokenId, s_tokenIdToHygiene[tokenId]);
     }
 
@@ -256,7 +276,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
             100
             ? s_tokenIdToHappiness[tokenId] + 30
             : 100;
-        chooseState(tokenId);
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Cuddling(msg.sender, tokenId, s_tokenIdToHappiness[tokenId]);
     }
 
@@ -266,7 +286,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToEnergy[tokenId] = s_tokenIdToEnergy[tokenId] + 30 <= 100
             ? s_tokenIdToEnergy[tokenId] + 30
             : 100;
-        chooseState(tokenId);
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Sleeping(msg.sender, tokenId, s_tokenIdToEnergy[tokenId]);
     }
 
