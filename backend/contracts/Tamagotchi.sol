@@ -44,6 +44,8 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     uint256 private immutable i_energyDecayInterval;
     uint256 private immutable i_funDecayInterval;
     uint256 private immutable i_hygieneDecayInterval;
+    uint256 private immutable i_growthInterval;
+    uint256 private immutable i_deathAge;
 
     string private s_happyImageUri;
     string private s_sadImageUri;
@@ -62,7 +64,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     mapping(uint256 => uint256) s_tokenIdToHygiene;
     mapping(uint256 => uint256) s_tokenIdToEnergy;
     mapping(uint256 => uint256) s_tokenIdToMintTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToGrowthLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToHungerLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToHappinessLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToFunLastTimestamp;
@@ -89,6 +91,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         uint256 energyDecayInterval,
         uint256 funDecayInterval,
         uint256 hygieneDecayInterval,
+        uint256 growthInterval,
         string memory happyImageUri,
         string memory sadImageUri,
         string memory neutralImageUri,
@@ -103,6 +106,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         i_energyDecayInterval = energyDecayInterval;
         i_funDecayInterval = funDecayInterval;
         i_hygieneDecayInterval = hygieneDecayInterval;
+        i_growthInterval = growthInterval;
         s_lastTimeStamp = block.timestamp;
         s_tokenCounter = 0;
         s_happyImageUri = happyImageUri;
@@ -123,7 +127,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
 
         // last timestamp for each state
         s_tokenIdToMintTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToGrowthLastTimestamp[s_tokenCounter] = lastTimestamp;
         s_tokenIdToHungerLastTimestamp[s_tokenCounter] = lastTimestamp;
         s_tokenIdToHappinessLastTimestamp[s_tokenCounter] = lastTimestamp;
         s_tokenIdToEnergyLastTimestamp[s_tokenCounter] = lastTimestamp;
@@ -197,6 +201,15 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
             );
 
             s_tokenIdToPetState[i] = _chooseState(i);
+
+            if (
+                block.timestamp - s_tokenIdToGrowthLastTimestamp[i] >
+                i_growthInterval
+            ) {
+                s_tokenIdToGrowthLastTimestamp[i] = block.timestamp;
+                s_tokenIdToPetsAge[i]++;
+                s_tokenIdToPetStage[i] = _chooseStage(s_tokenIdToPetsAge[i]);
+            }
         }
     }
 
@@ -250,6 +263,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         }
 
         return chosenState;
+    }
+
+    function _chooseStage(uint256 age) internal view returns (PetStage) {
+        if (age <= 3) return PetStage.BABY;
+        if (age > 3 && age <= i_deathAge) return PetStage.ADULT;
+        return PetStage.DEAD;
     }
 
     function _max(uint256 a, uint256 b) internal pure returns (uint256) {
