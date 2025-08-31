@@ -66,7 +66,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     mapping(uint256 => uint256) s_tokenIdToHungerLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToHappinessLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToFunLastTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToEnerygyLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToEnergyLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToHygieneLastTimestamp;
 
     //modifiers
@@ -126,7 +126,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToLastTimestamp[s_tokenCounter] = lastTimestamp;
         s_tokenIdToHungerLastTimestamp[s_tokenCounter] = lastTimestamp;
         s_tokenIdToHappinessLastTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToEnerygyLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToEnergyLastTimestamp[s_tokenCounter] = lastTimestamp;
         s_tokenIdToFunLastTimestamp[s_tokenCounter] = lastTimestamp;
         s_tokenIdToHygieneLastTimestamp[s_tokenCounter] = lastTimestamp;
 
@@ -176,7 +176,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
             _applyDecay(
                 i,
                 i_energyDecayInterval,
-                s_tokenIdToEnerygyLastTimestamp,
+                s_tokenIdToEnergyLastTimestamp,
                 s_tokenIdToEnergy
             );
 
@@ -263,6 +263,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToHunger[tokenId] = s_tokenIdToHunger[tokenId] + 30 <= 100
             ? s_tokenIdToHunger[tokenId] + 30
             : 100;
+        s_tokenIdToHungerLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Feeding(msg.sender, tokenId, s_tokenIdToHunger[tokenId]);
     }
@@ -273,6 +274,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToFun[tokenId] = s_tokenIdToFun[tokenId] + 30 <= 100
             ? s_tokenIdToFun[tokenId] + 30
             : 100;
+        s_tokenIdToFunLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Playing(msg.sender, tokenId, s_tokenIdToFun[tokenId]);
     }
@@ -283,6 +285,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToHygiene[tokenId] = s_tokenIdToHygiene[tokenId] + 30 <= 100
             ? s_tokenIdToHygiene[tokenId] + 30
             : 100;
+        s_tokenIdToHygieneLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Bathing(msg.sender, tokenId, s_tokenIdToHygiene[tokenId]);
     }
@@ -294,6 +297,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
             100
             ? s_tokenIdToHappiness[tokenId] + 30
             : 100;
+        s_tokenIdToHappinessLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Cuddling(msg.sender, tokenId, s_tokenIdToHappiness[tokenId]);
     }
@@ -304,6 +308,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToEnergy[tokenId] = s_tokenIdToEnergy[tokenId] + 30 <= 100
             ? s_tokenIdToEnergy[tokenId] + 30
             : 100;
+        s_tokenIdToEnergyLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Sleeping(msg.sender, tokenId, s_tokenIdToEnergy[tokenId]);
     }
