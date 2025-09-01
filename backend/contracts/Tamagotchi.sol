@@ -91,6 +91,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         _;
     }
 
+    modifier isAlive(uint256 tokenId) {
+        if (s_tokenIdToPetStage[tokenId] == PetStage.DEAD)
+            revert Tamagotchi__PetIsDead();
+        _;
+    }
+
     constructor(
         uint256 interval,
         uint256 hungerDecayInterval,
@@ -342,7 +348,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
 
     function feed(
         uint256 tokenId
-    ) public onlyAuthorizedPersons(tokenId) isValidToken(tokenId) {
+    )
+        public
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
         s_tokenIdToHunger[tokenId] = s_tokenIdToHunger[tokenId] + 30 <= 100
             ? s_tokenIdToHunger[tokenId] + 30
             : 100;
@@ -353,7 +364,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
 
     function play(
         uint256 tokenId
-    ) public onlyAuthorizedPersons(tokenId) isValidToken(tokenId) {
+    )
+        public
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
         s_tokenIdToFun[tokenId] = s_tokenIdToFun[tokenId] + 30 <= 100
             ? s_tokenIdToFun[tokenId] + 30
             : 100;
@@ -364,7 +380,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
 
     function bathe(
         uint256 tokenId
-    ) public onlyAuthorizedPersons(tokenId) isValidToken(tokenId) {
+    )
+        public
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
         s_tokenIdToHygiene[tokenId] = s_tokenIdToHygiene[tokenId] + 30 <= 100
             ? s_tokenIdToHygiene[tokenId] + 30
             : 100;
@@ -375,7 +396,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
 
     function cuddle(
         uint256 tokenId
-    ) public onlyAuthorizedPersons(tokenId) isValidToken(tokenId) {
+    )
+        public
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
         s_tokenIdToHappiness[tokenId] = s_tokenIdToHappiness[tokenId] + 30 <=
             100
             ? s_tokenIdToHappiness[tokenId] + 30
@@ -387,7 +413,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
 
     function sleep(
         uint256 tokenId
-    ) public onlyAuthorizedPersons(tokenId) isValidToken(tokenId) {
+    )
+        public
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
         s_tokenIdToEnergy[tokenId] = s_tokenIdToEnergy[tokenId] + 30 <= 100
             ? s_tokenIdToEnergy[tokenId] + 30
             : 100;
