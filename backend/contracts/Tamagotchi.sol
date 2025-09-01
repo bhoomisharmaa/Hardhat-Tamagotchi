@@ -4,8 +4,14 @@ import {ERC721} from "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import {Base64} from "@openzeppelin/contracts/utils/Base64.sol";
 import {Strings} from "@openzeppelin/contracts/utils/Strings.sol";
 import {AutomationCompatibleInterface} from "@chainlink/contracts/src/v0.8/automation/AutomationCompatible.sol";
+import {VRFConsumerBaseV2Plus} from "@chainlink/contracts/src/v0.8/vrf/dev/VRFConsumerBaseV2Plus.sol";
+import {VRFV2PlusClient} from "@chainlink/contracts/src/v0.8/vrf/dev/libraries/VRFV2PlusClient.sol";
 
-contract Tamagotchi is ERC721, AutomationCompatibleInterface {
+contract Tamagotchi is
+    ERC721,
+    AutomationCompatibleInterface,
+    VRFConsumerBaseV2Plus
+{
     // enums
     enum PetStage {
         BABY,
@@ -22,6 +28,13 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         LETHARGIC
     }
 
+    //structs
+    struct RequestStatus {
+        bool fulfilled;
+        bool exists;
+        uint256[] randomWords;
+    }
+
     //events
     event NftMinted(address owner, uint256 tokenId);
     event Feeding(address sender, uint256 tokenId, uint256 hungerLevel);
@@ -30,12 +43,15 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     event Cuddling(address sender, uint256 tokenId, uint256 happinessLevel);
     event Sleeping(address sender, uint256 tokenId, uint256 energyLevel);
     event PetDied(uint256 tokenId, uint256 timestamp);
+    event RequestSent(uint256 requestId, uint32 numWords);
+    event PetDeathAgeAssigned(uint256 requestId, uint256 deathAge);
 
     //errors
     error Tamagotchi__NotAuthorized();
     error Tamagotchi__NotValidToken();
     error Tamagotchi__UpkeepNotNeeded();
     error Tamagotchi__PetIsDead();
+    error Tamagotchi__RequestNotFound();
 
     //Variables
     uint256 private s_tokenCounter;
@@ -47,7 +63,6 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     uint256 private immutable i_funDecayInterval;
     uint256 private immutable i_hygieneDecayInterval;
     uint256 private immutable i_growthInterval;
-    uint256 private immutable i_deathAge;
     uint256 private immutable i_hungerToleranceInterval;
     uint256 private immutable i_sadToleranceInterval;
     uint256 private immutable i_stinkyToleranceInterval;
@@ -77,6 +92,17 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     mapping(uint256 => uint256) s_tokenIdToFunLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToEnergyLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToHygieneLastTimestamp;
+    mapping(uint256 => uint256) s_tokenIdToDeathAge;
+
+    //Chainlink VRF variables
+    mapping(uint256 => uint256) s_requestIdToTokenId;
+    mapping(uint256 => bool) s_requestIdExists;
+    uint256 private immutable i_subscriptionId;
+    bytes32 private immutable i_keyHash;
+    uint32 private immutable i_callbackGasLimit;
+    uint16 private constant REQUEST_CONFIRMATIONS = 3;
+    uint16 private constant NUM_WORDS = 1;
+    address private immutable i_vrfCoordinator;
 
     //modifiers
     modifier onlyAuthorizedPersons(uint256 tokenId) {
@@ -110,6 +136,10 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         uint256 stinkyToleranceInterval,
         uint256 boredToleranceInterval,
         uint256 sleepToleranceInterval,
+        uint256 subscriptionId,
+        address vrfCoordinator,
+        bytes32 keyHash,
+        uint32 callbackGasLimit,
         string memory happyImageUri,
         string memory sadImageUri,
         string memory neutralImageUri,
@@ -117,7 +147,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         string memory boredImageUri,
         string memory stinkyImageUri,
         string memory lethargicImageUri
-    ) ERC721("Tamagotchi", "TMG") {
+    ) ERC721("Tamagotchi", "TMG") VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_interval = interval;
         i_hungerDecayInterval = hungerDecayInterval;
         i_happinessDecayInterval = happinessDecayInterval;
@@ -130,6 +160,10 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         i_stinkyToleranceInterval = stinkyToleranceInterval;
         i_boredToleranceInterval = boredToleranceInterval;
         i_sleepToleranceInterval = sleepToleranceInterval;
+        i_subscriptionId = subscriptionId;
+        i_vrfCoordinator = vrfCoordinator;
+        i_keyHash = keyHash;
+        i_callbackGasLimit = callbackGasLimit;
         s_lastTimeStamp = block.timestamp;
         s_tokenCounter = 0;
         s_happyImageUri = happyImageUri;
@@ -163,11 +197,41 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_tokenIdToEnergy[s_tokenCounter] = 70;
         s_tokenIdToHygiene[s_tokenCounter] = 20;
         s_tokenIdToFun[s_tokenCounter] = 70;
-
         s_tokenIdToPetState[s_tokenCounter] = PetState.STINKY;
 
+        //Chainlink VRF
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: i_keyHash,
+                subId: i_subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: i_callbackGasLimit,
+                numWords: NUM_WORDS,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
+        );
+        s_requestIdExists[requestId] = true;
+        s_requestIdToTokenId[requestId] = s_tokenCounter;
+
+        //events
+        emit RequestSent(requestId, NUM_WORDS);
+        emit NftMinted(msg.sender, s_tokenCounter);
+
         s_tokenCounter++;
-        emit NftMinted(msg.sender, s_tokenCounter - 1);
+    }
+
+    function fulfillRandomWords(
+        uint256 _requestId,
+        uint256[] calldata _randomWords
+    ) internal override {
+        if (!s_requestIdExists[_requestId])
+            revert Tamagotchi__RequestNotFound();
+        uint256 tokenId = s_requestIdToTokenId[_requestId];
+        uint256 deathAge = (_randomWords[0] % 16) + 5;
+        s_tokenIdToDeathAge[tokenId] = deathAge;
+        emit PetDeathAgeAssigned(_requestId, deathAge);
     }
 
     function checkUpkeep(
@@ -232,7 +296,10 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
             ) {
                 s_tokenIdToGrowthLastTimestamp[i] = block.timestamp;
                 s_tokenIdToPetsAge[i]++;
-                s_tokenIdToPetStage[i] = _chooseStage(s_tokenIdToPetsAge[i]);
+                s_tokenIdToPetStage[i] = _chooseStage(
+                    s_tokenIdToPetsAge[i],
+                    s_tokenIdToDeathAge[i]
+                );
                 if (s_tokenIdToPetStage[i] == PetStage.DEAD) {
                     emit PetDied(i, block.timestamp);
                     continue;
@@ -335,9 +402,12 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         return chosenState;
     }
 
-    function _chooseStage(uint256 age) internal view returns (PetStage) {
+    function _chooseStage(
+        uint256 age,
+        uint256 deathAge
+    ) internal pure returns (PetStage) {
         if (age <= 3) return PetStage.BABY;
-        if (age > 3 && age <= i_deathAge) return PetStage.ADULT;
+        if (age > 3 && age <= deathAge) return PetStage.ADULT;
         return PetStage.DEAD;
     }
 
