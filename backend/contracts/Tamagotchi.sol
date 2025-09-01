@@ -29,11 +29,13 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     event Bathing(address sender, uint256 tokenId, uint256 hygieneLevel);
     event Cuddling(address sender, uint256 tokenId, uint256 happinessLevel);
     event Sleeping(address sender, uint256 tokenId, uint256 energyLevel);
+    event PetDied(uint256 tokenId, uint256 timestamp);
 
     //errors
     error Tamagotchi__NotAuthorized();
     error Tamagotchi__NotValidToken();
     error Tamagotchi__UpkeepNotNeeded();
+    error Tamagotchi__PetIsDead();
 
     //Variables
     uint256 private s_tokenCounter;
@@ -46,6 +48,11 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
     uint256 private immutable i_hygieneDecayInterval;
     uint256 private immutable i_growthInterval;
     uint256 private immutable i_deathAge;
+    uint256 private immutable i_hungerToleranceInterval;
+    uint256 private immutable i_sadToleranceInterval;
+    uint256 private immutable i_stinkyToleranceInterval;
+    uint256 private immutable i_boredToleranceInterval;
+    uint256 private immutable i_sleepToleranceInterval;
 
     string private s_happyImageUri;
     string private s_sadImageUri;
@@ -92,6 +99,11 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         uint256 funDecayInterval,
         uint256 hygieneDecayInterval,
         uint256 growthInterval,
+        uint256 hungerToleranceInterval,
+        uint256 sadToleranceInterval,
+        uint256 stinkyToleranceInterval,
+        uint256 boredToleranceInterval,
+        uint256 sleepToleranceInterval,
         string memory happyImageUri,
         string memory sadImageUri,
         string memory neutralImageUri,
@@ -107,6 +119,11 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         i_funDecayInterval = funDecayInterval;
         i_hygieneDecayInterval = hygieneDecayInterval;
         i_growthInterval = growthInterval;
+        i_hungerToleranceInterval = hungerToleranceInterval;
+        i_sadToleranceInterval = sadToleranceInterval;
+        i_stinkyToleranceInterval = stinkyToleranceInterval;
+        i_boredToleranceInterval = boredToleranceInterval;
+        i_sleepToleranceInterval = sleepToleranceInterval;
         s_lastTimeStamp = block.timestamp;
         s_tokenCounter = 0;
         s_happyImageUri = happyImageUri;
@@ -160,6 +177,7 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
         s_lastTimeStamp = block.timestamp;
 
         for (uint256 i = 0; i < s_tokenCounter; i++) {
+            if (s_tokenIdToPetStage[i] == PetStage.DEAD) continue;
             // HUNGER
             _applyDecay(
                 i,
@@ -209,6 +227,52 @@ contract Tamagotchi is ERC721, AutomationCompatibleInterface {
                 s_tokenIdToGrowthLastTimestamp[i] = block.timestamp;
                 s_tokenIdToPetsAge[i]++;
                 s_tokenIdToPetStage[i] = _chooseStage(s_tokenIdToPetsAge[i]);
+                if (s_tokenIdToPetStage[i] == PetStage.DEAD) {
+                    emit PetDied(i, block.timestamp);
+                    continue;
+                }
+            }
+            uint256 timestamp = block.timestamp;
+            if (
+                s_tokenIdToHunger[i] == 0 &&
+                timestamp - s_tokenIdToHungerLastTimestamp[i] >
+                i_hungerToleranceInterval
+            ) {
+                s_tokenIdToPetStage[i] = PetStage.DEAD;
+                emit PetDied(i, block.timestamp);
+                continue;
+            } else if (
+                s_tokenIdToHappiness[i] == 0 &&
+                timestamp - s_tokenIdToHappinessLastTimestamp[i] >
+                i_sadToleranceInterval
+            ) {
+                s_tokenIdToPetStage[i] = PetStage.DEAD;
+                emit PetDied(i, block.timestamp);
+                continue;
+            } else if (
+                s_tokenIdToFun[i] == 0 &&
+                timestamp - s_tokenIdToFunLastTimestamp[i] >
+                i_boredToleranceInterval
+            ) {
+                s_tokenIdToPetStage[i] = PetStage.DEAD;
+                emit PetDied(i, block.timestamp);
+                continue;
+            } else if (
+                s_tokenIdToHygiene[i] == 0 &&
+                timestamp - s_tokenIdToHygieneLastTimestamp[i] >
+                i_stinkyToleranceInterval
+            ) {
+                s_tokenIdToPetStage[i] = PetStage.DEAD;
+                emit PetDied(i, block.timestamp);
+                continue;
+            } else if (
+                s_tokenIdToEnergy[i] == 0 &&
+                timestamp - s_tokenIdToEnergyLastTimestamp[i] >
+                i_sleepToleranceInterval
+            ) {
+                s_tokenIdToPetStage[i] = PetStage.DEAD;
+                emit PetDied(i, block.timestamp);
+                continue;
             }
         }
     }
