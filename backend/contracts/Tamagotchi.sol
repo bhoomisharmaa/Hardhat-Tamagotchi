@@ -120,55 +120,55 @@ contract Tamagotchi is
 
     // Constructor
     constructor(
-        uint256 interval,
-        uint256 hungerDecayRatePerSecond,
-        uint256 happinessDecayRatePerSecond,
-        uint256 energyDecayRatePerSecond,
-        uint256 funDecayRatePerSecond,
-        uint256 hygieneDecayRatePerSecond,
-        uint256 growthInterval,
-        uint256 hungerToleranceInterval,
-        uint256 sadToleranceInterval,
-        uint256 stinkyToleranceInterval,
-        uint256 boredToleranceInterval,
-        uint256 sleepToleranceInterval,
-        uint256 subscriptionId,
-        address vrfCoordinator,
-        bytes32 keyHash,
-        uint32 callbackGasLimit,
-        string memory happyImageUri,
-        string memory sadImageUri,
-        string memory neutralImageUri,
-        string memory hungryImageUri,
-        string memory boredImageUri,
-        string memory stinkyImageUri,
-        string memory lethargicImageUri
-    ) ERC721("Tamagotchi", "TMG") VRFConsumerBaseV2Plus(vrfCoordinator) {
-        i_interval = interval;
-        i_hungerDecayRatePerSecond = hungerDecayRatePerSecond;
-        i_happinessDecayRatePerSecond = happinessDecayRatePerSecond;
-        i_energyDecayRatePerSecond = energyDecayRatePerSecond;
-        i_funDecayRatePerSecond = funDecayRatePerSecond;
-        i_hygieneDecayRatePerSecond = hygieneDecayRatePerSecond;
-        i_growthInterval = growthInterval;
-        i_hungerToleranceInterval = hungerToleranceInterval;
-        i_sadToleranceInterval = sadToleranceInterval;
-        i_stinkyToleranceInterval = stinkyToleranceInterval;
-        i_boredToleranceInterval = boredToleranceInterval;
-        i_sleepToleranceInterval = sleepToleranceInterval;
-        i_subscriptionId = subscriptionId;
-        i_vrfCoordinator = vrfCoordinator;
-        i_keyHash = keyHash;
-        i_callbackGasLimit = callbackGasLimit;
+        uint256 _interval,
+        uint256 _hungerDecayRatePerSecond,
+        uint256 _happinessDecayRatePerSecond,
+        uint256 _energyDecayRatePerSecond,
+        uint256 _funDecayRatePerSecond,
+        uint256 _hygieneDecayRatePerSecond,
+        uint256 _growthInterval,
+        uint256 _hungerToleranceInterval,
+        uint256 _sadToleranceInterval,
+        uint256 _stinkyToleranceInterval,
+        uint256 _boredToleranceInterval,
+        uint256 _sleepToleranceInterval,
+        uint256 _subscriptionId,
+        address _vrfCoordinator,
+        bytes32 _keyHash,
+        uint32 _callbackGasLimit,
+        string memory _happyImageUri,
+        string memory _sadImageUri,
+        string memory _neutralImageUri,
+        string memory _hungryImageUri,
+        string memory _boredImageUri,
+        string memory _stinkyImageUri,
+        string memory _lethargicImageUri
+    ) ERC721("Tamagotchi", "TMG") VRFConsumerBaseV2Plus(_vrfCoordinator) {
+        i_interval = _interval;
+        i_hungerDecayRatePerSecond = _hungerDecayRatePerSecond;
+        i_happinessDecayRatePerSecond = _happinessDecayRatePerSecond;
+        i_energyDecayRatePerSecond = _energyDecayRatePerSecond;
+        i_funDecayRatePerSecond = _funDecayRatePerSecond;
+        i_hygieneDecayRatePerSecond = _hygieneDecayRatePerSecond;
+        i_growthInterval = _growthInterval;
+        i_hungerToleranceInterval = _hungerToleranceInterval;
+        i_sadToleranceInterval = _sadToleranceInterval;
+        i_stinkyToleranceInterval = _stinkyToleranceInterval;
+        i_boredToleranceInterval = _boredToleranceInterval;
+        i_sleepToleranceInterval = _sleepToleranceInterval;
+        i_subscriptionId = _subscriptionId;
+        i_vrfCoordinator = _vrfCoordinator;
+        i_keyHash = _keyHash;
+        i_callbackGasLimit = _callbackGasLimit;
         s_lastTimeStamp = block.timestamp;
         s_tokenCounter = 0;
-        s_happyImageUri = happyImageUri;
-        s_sadImageUri = sadImageUri;
-        s_neutralImageUri = neutralImageUri;
-        s_hungryImageUri = hungryImageUri;
-        s_boredImageUri = boredImageUri;
-        s_stinkyImageUri = stinkyImageUri;
-        s_lethargicImageUri = lethargicImageUri;
+        s_happyImageUri = _happyImageUri;
+        s_sadImageUri = _sadImageUri;
+        s_neutralImageUri = _neutralImageUri;
+        s_hungryImageUri = _hungryImageUri;
+        s_boredImageUri = _boredImageUri;
+        s_stinkyImageUri = _stinkyImageUri;
+        s_lethargicImageUri = _lethargicImageUri;
         s_lastProcessedTokenId = 0;
     }
 
@@ -178,16 +178,16 @@ contract Tamagotchi is
         s_tokenIdToPetStage[s_tokenCounter] = PetStage.BABY;
         s_tokenIdToPetsAge[s_tokenCounter] = 0;
 
-        uint256 lastTimestamp = block.timestamp;
+        uint256 _lastTimestamp = block.timestamp;
 
         // last timestamp for each state
-        s_tokenIdToMintTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToGrowthLastTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToHungerLastTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToHappinessLastTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToEnergyLastTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToFunLastTimestamp[s_tokenCounter] = lastTimestamp;
-        s_tokenIdToHygieneLastTimestamp[s_tokenCounter] = lastTimestamp;
+        s_tokenIdToMintTimestamp[s_tokenCounter] = _lastTimestamp;
+        s_tokenIdToGrowthLastTimestamp[s_tokenCounter] = _lastTimestamp;
+        s_tokenIdToHungerLastTimestamp[s_tokenCounter] = _lastTimestamp;
+        s_tokenIdToHappinessLastTimestamp[s_tokenCounter] = _lastTimestamp;
+        s_tokenIdToEnergyLastTimestamp[s_tokenCounter] = _lastTimestamp;
+        s_tokenIdToFunLastTimestamp[s_tokenCounter] = _lastTimestamp;
+        s_tokenIdToHygieneLastTimestamp[s_tokenCounter] = _lastTimestamp;
 
         //attributes
         s_tokenIdToHunger[s_tokenCounter] = 30;
@@ -428,6 +428,210 @@ contract Tamagotchi is
         s_lastProcessedTokenId += 10;
     }
 
+    // Getter functions
+
+    function tokenCounter() external view returns (uint256) {
+        return s_tokenCounter;
+    }
+
+    function interval() external view returns (uint256) {
+        return i_interval;
+    }
+
+    function lastTimestamp() external view returns (uint256) {
+        return s_lastTimeStamp;
+    }
+
+    function hungerDecayRatePerSecond() external view returns (uint256) {
+        return i_hungerDecayRatePerSecond;
+    }
+
+    function happinessDecayRatePerSecond() external view returns (uint256) {
+        return i_happinessDecayRatePerSecond;
+    }
+
+    function energyDecayRatePerSecond() external view returns (uint256) {
+        return i_energyDecayRatePerSecond;
+    }
+
+    function funDecayRatePerSecond() external view returns (uint256) {
+        return i_funDecayRatePerSecond;
+    }
+
+    function hygieneDecayRatePerSecond() external view returns (uint256) {
+        return i_hygieneDecayRatePerSecond;
+    }
+
+    function growthInterval() external view returns (uint256) {
+        return i_growthInterval;
+    }
+
+    function hungerToleranceInterval() external view returns (uint256) {
+        return i_hungerToleranceInterval;
+    }
+
+    function sadToleranceInterval() external view returns (uint256) {
+        return i_sadToleranceInterval;
+    }
+
+    function stinkyToleranceInterval() external view returns (uint256) {
+        return i_stinkyToleranceInterval;
+    }
+
+    function boredToleranceInterval() external view returns (uint256) {
+        return i_stinkyToleranceInterval;
+    }
+
+    function sleepToleranceInterval() external view returns (uint256) {
+        return i_sleepToleranceInterval;
+    }
+
+    function lastProcessedTokenId() external view returns (uint256) {
+        return s_lastProcessedTokenId;
+    }
+
+    function happyImageUri() external view returns (string memory) {
+        return s_happyImageUri;
+    }
+
+    function sadImageUri() external view returns (string memory) {
+        return s_sadImageUri;
+    }
+
+    function neutralImageUri() external view returns (string memory) {
+        return s_neutralImageUri;
+    }
+
+    function hungryImageUri() external view returns (string memory) {
+        return s_hungryImageUri;
+    }
+
+    function boredImageUri() external view returns (string memory) {
+        return s_boredImageUri;
+    }
+
+    function stinkyImageUri() external view returns (string memory) {
+        return s_stinkyImageUri;
+    }
+
+    function lethargicImageUri() external view returns (string memory) {
+        return s_lethargicImageUri;
+    }
+
+    function tokenIdToPetsAge(uint256 tokenId) external view returns (uint256) {
+        return s_tokenIdToPetsAge[tokenId];
+    }
+
+    function tokenIdToPetStage(
+        uint256 tokenId
+    ) external view returns (PetStage) {
+        return s_tokenIdToPetStage[tokenId];
+    }
+
+    function tokenIdToPetState(
+        uint256 tokenId
+    ) external view returns (PetState) {
+        return s_tokenIdToPetState[tokenId];
+    }
+
+    function tokenIdToHappiness(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToHappiness[tokenId];
+    }
+
+    function tokenIdToHunger(uint256 tokenId) external view returns (uint256) {
+        return s_tokenIdToHunger[tokenId];
+    }
+
+    function tokenIdToFun(uint256 tokenId) external view returns (uint256) {
+        return s_tokenIdToFun[tokenId];
+    }
+
+    function tokenIdToHygiene(uint256 tokenId) external view returns (uint256) {
+        return s_tokenIdToHygiene[tokenId];
+    }
+
+    function tokenIdToEnergy(uint256 tokenId) external view returns (uint256) {
+        return s_tokenIdToEnergy[tokenId];
+    }
+
+    function tokenIdToMintTimestamp(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToMintTimestamp[tokenId];
+    }
+
+    function tokenIdToGrowthLastTimestamp(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToGrowthLastTimestamp[tokenId];
+    }
+
+    function tokenIdToHungerLastTimestamp(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToHungerLastTimestamp[tokenId];
+    }
+
+    function tokenIdToHappinessLastTimestamp(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToHappinessLastTimestamp[tokenId];
+    }
+
+    function tokenIdToFunLastTimestamp(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToFunLastTimestamp[tokenId];
+    }
+
+    function tokenIdToEnergyLastTimestamp(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToEnergyLastTimestamp[tokenId];
+    }
+
+    function tokenIdToHygieneLastTimestamp(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToHygieneLastTimestamp[tokenId];
+    }
+
+    function tokenIdToDeathAge(
+        uint256 tokenId
+    ) external view returns (uint256) {
+        return s_tokenIdToDeathAge[tokenId];
+    }
+
+    function subscriptionId() external view returns (uint256) {
+        return i_subscriptionId;
+    }
+
+    function keyHash() external view returns (bytes32) {
+        return i_keyHash;
+    }
+
+    function callbackGasLimit() external view returns (uint32) {
+        return i_callbackGasLimit;
+    }
+
+    function vrfCoordinator() external view returns (address) {
+        return i_vrfCoordinator;
+    }
+
+    function decayPrecision() external pure returns (uint256) {
+        return DECAY_PRECISION;
+    }
+
+    function RequestConfirmations() external pure returns (uint16) {
+        return REQUEST_CONFIRMATIONS;
+    }
+
+    function numWords() external pure returns (uint16) {
+        return NUM_WORDS;
+    }
+
     // Returns the metadata URI for a given tokenId
     function tokenURI(
         uint256 tokenId
@@ -495,14 +699,14 @@ contract Tamagotchi is
     function _applyDecay(
         uint256 tokenId,
         uint256 decayRatePerSecond,
-        mapping(uint256 => uint256) storage lastTimestamp,
+        mapping(uint256 => uint256) storage _lastTimestamp,
         mapping(uint256 => uint256) storage stateLevel
     ) internal {
-        uint256 lastStamp = lastTimestamp[tokenId];
+        uint256 lastStamp = _lastTimestamp[tokenId];
         uint256 decay = (decayRatePerSecond * (block.timestamp - lastStamp)) /
             DECAY_PRECISION;
         stateLevel[tokenId] = _max(stateLevel[tokenId] - decay, 0);
-        lastTimestamp[tokenId] = block.timestamp;
+        _lastTimestamp[tokenId] = block.timestamp;
     }
 
     function _applyDeathStage(
@@ -510,9 +714,9 @@ contract Tamagotchi is
         uint256 timestamp,
         uint256 toleranceInterval,
         uint256 stateLevel,
-        uint256 lastTimestamp
+        uint256 _lastTimestamp
     ) internal returns (bool) {
-        if (stateLevel == 0 && timestamp - lastTimestamp > toleranceInterval) {
+        if (stateLevel == 0 && timestamp - _lastTimestamp > toleranceInterval) {
             s_tokenIdToPetStage[tokenId] = PetStage.DEAD;
             emit PetDied(tokenId, timestamp);
             return true;
