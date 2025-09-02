@@ -68,6 +68,7 @@ contract Tamagotchi is
     uint256 private immutable i_stinkyToleranceInterval;
     uint256 private immutable i_boredToleranceInterval;
     uint256 private immutable i_sleepToleranceInterval;
+    uint256 private s_lastProcessedTokenId;
     uint256 private constant DECAY_PRECISION = 1e18;
 
     string private s_happyImageUri;
@@ -174,6 +175,7 @@ contract Tamagotchi is
         s_boredImageUri = boredImageUri;
         s_stinkyImageUri = stinkyImageUri;
         s_lethargicImageUri = lethargicImageUri;
+        s_lastProcessedTokenId = 0;
     }
 
     function mintNft() public {
@@ -246,8 +248,13 @@ contract Tamagotchi is
             revert Tamagotchi__UpkeepNotNeeded();
 
         s_lastTimeStamp = block.timestamp;
-
-        for (uint256 i = 0; i < s_tokenCounter; i++) {
+        if (s_lastProcessedTokenId >= s_tokenCounter)
+            s_lastProcessedTokenId = 0;
+        for (
+            uint256 i = s_lastProcessedTokenId;
+            i < _min(s_tokenCounter, s_lastProcessedTokenId + 10);
+            i++
+        ) {
             if (s_tokenIdToPetStage[i] == PetStage.DEAD) continue;
             // HUNGER
             _applyDecay(
@@ -349,6 +356,8 @@ contract Tamagotchi is
                 continue;
             }
         }
+
+        s_lastProcessedTokenId += 10;
     }
 
     function _applyDecay(
@@ -413,6 +422,11 @@ contract Tamagotchi is
 
     function _max(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a >= b) return a;
+        else return b;
+    }
+
+    function _min(uint256 a, uint256 b) internal pure returns (uint256) {
+        if (a <= b) return a;
         else return b;
     }
 
