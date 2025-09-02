@@ -28,13 +28,6 @@ contract Tamagotchi is
         LETHARGIC
     }
 
-    //structs
-    struct RequestStatus {
-        bool fulfilled;
-        bool exists;
-        uint256[] randomWords;
-    }
-
     //events
     event NftMinted(address owner, uint256 tokenId);
     event Feeding(address sender, uint256 tokenId, uint256 hungerLevel);
@@ -178,7 +171,7 @@ contract Tamagotchi is
         s_lastProcessedTokenId = 0;
     }
 
-    function mintNft() public {
+    function mintNft() external {
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenIdToPetStage[s_tokenCounter] = PetStage.BABY;
         s_tokenIdToPetsAge[s_tokenCounter] = 0;
@@ -365,6 +358,8 @@ contract Tamagotchi is
         s_lastProcessedTokenId += 10;
     }
 
+    //Helper functions
+
     function _applyDecay(
         uint256 tokenId,
         uint256 decayRatePerSecond,
@@ -452,14 +447,12 @@ contract Tamagotchi is
     function feed(
         uint256 tokenId
     )
-        public
+        external
         onlyAuthorizedPersons(tokenId)
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToHunger[tokenId] = s_tokenIdToHunger[tokenId] + 30 <= 100
-            ? s_tokenIdToHunger[tokenId] + 30
-            : 100;
+        s_tokenIdToHunger[tokenId] = _min(s_tokenIdToHunger[tokenId] + 30, 100);
         s_tokenIdToHungerLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Feeding(msg.sender, tokenId, s_tokenIdToHunger[tokenId]);
@@ -468,14 +461,12 @@ contract Tamagotchi is
     function play(
         uint256 tokenId
     )
-        public
+        external
         onlyAuthorizedPersons(tokenId)
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToFun[tokenId] = s_tokenIdToFun[tokenId] + 30 <= 100
-            ? s_tokenIdToFun[tokenId] + 30
-            : 100;
+        s_tokenIdToFun[tokenId] = _min(s_tokenIdToFun[tokenId] + 30, 100);
         s_tokenIdToFunLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Playing(msg.sender, tokenId, s_tokenIdToFun[tokenId]);
@@ -484,14 +475,15 @@ contract Tamagotchi is
     function bathe(
         uint256 tokenId
     )
-        public
+        external
         onlyAuthorizedPersons(tokenId)
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToHygiene[tokenId] = s_tokenIdToHygiene[tokenId] + 30 <= 100
-            ? s_tokenIdToHygiene[tokenId] + 30
-            : 100;
+        s_tokenIdToHygiene[tokenId] = _min(
+            s_tokenIdToHygiene[tokenId] + 30,
+            100
+        );
         s_tokenIdToHygieneLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Bathing(msg.sender, tokenId, s_tokenIdToHygiene[tokenId]);
@@ -500,15 +492,15 @@ contract Tamagotchi is
     function cuddle(
         uint256 tokenId
     )
-        public
+        external
         onlyAuthorizedPersons(tokenId)
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToHappiness[tokenId] = s_tokenIdToHappiness[tokenId] + 30 <=
+        s_tokenIdToHappiness[tokenId] = _min(
+            s_tokenIdToHappiness[tokenId] + 30,
             100
-            ? s_tokenIdToHappiness[tokenId] + 30
-            : 100;
+        );
         s_tokenIdToHappinessLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Cuddling(msg.sender, tokenId, s_tokenIdToHappiness[tokenId]);
@@ -517,14 +509,12 @@ contract Tamagotchi is
     function sleep(
         uint256 tokenId
     )
-        public
+        external
         onlyAuthorizedPersons(tokenId)
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToEnergy[tokenId] = s_tokenIdToEnergy[tokenId] + 30 <= 100
-            ? s_tokenIdToEnergy[tokenId] + 30
-            : 100;
+        s_tokenIdToEnergy[tokenId] = _min(s_tokenIdToEnergy[tokenId] + 30, 100);
         s_tokenIdToEnergyLastTimestamp[tokenId] = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
         emit Sleeping(msg.sender, tokenId, s_tokenIdToEnergy[tokenId]);
