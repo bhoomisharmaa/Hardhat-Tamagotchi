@@ -57,17 +57,18 @@ contract Tamagotchi is
     uint256 private s_tokenCounter;
     uint256 private immutable i_interval;
     uint256 private s_lastTimeStamp;
-    uint256 private immutable i_hungerDecayInterval;
-    uint256 private immutable i_happinessDecayInterval;
-    uint256 private immutable i_energyDecayInterval;
-    uint256 private immutable i_funDecayInterval;
-    uint256 private immutable i_hygieneDecayInterval;
+    uint256 private immutable i_hungerDecayRatePerSecond;
+    uint256 private immutable i_happinessDecayRatePerSecond;
+    uint256 private immutable i_energyDecayRatePerSecond;
+    uint256 private immutable i_funDecayRatePerSecond;
+    uint256 private immutable i_hygieneDecayRatePerSecond;
     uint256 private immutable i_growthInterval;
     uint256 private immutable i_hungerToleranceInterval;
     uint256 private immutable i_sadToleranceInterval;
     uint256 private immutable i_stinkyToleranceInterval;
     uint256 private immutable i_boredToleranceInterval;
     uint256 private immutable i_sleepToleranceInterval;
+    uint256 private constant DECAY_PRECISION = 1e18;
 
     string private s_happyImageUri;
     string private s_sadImageUri;
@@ -125,11 +126,11 @@ contract Tamagotchi is
 
     constructor(
         uint256 interval,
-        uint256 hungerDecayInterval,
-        uint256 happinessDecayInterval,
-        uint256 energyDecayInterval,
-        uint256 funDecayInterval,
-        uint256 hygieneDecayInterval,
+        uint256 hungerDecayRatePerSecond,
+        uint256 happinessDecayRatePerSecond,
+        uint256 energyDecayRatePerSecond,
+        uint256 funDecayRatePerSecond,
+        uint256 hygieneDecayRatePerSecond,
         uint256 growthInterval,
         uint256 hungerToleranceInterval,
         uint256 sadToleranceInterval,
@@ -149,11 +150,11 @@ contract Tamagotchi is
         string memory lethargicImageUri
     ) ERC721("Tamagotchi", "TMG") VRFConsumerBaseV2Plus(vrfCoordinator) {
         i_interval = interval;
-        i_hungerDecayInterval = hungerDecayInterval;
-        i_happinessDecayInterval = happinessDecayInterval;
-        i_energyDecayInterval = energyDecayInterval;
-        i_funDecayInterval = funDecayInterval;
-        i_hygieneDecayInterval = hygieneDecayInterval;
+        i_hungerDecayRatePerSecond = hungerDecayRatePerSecond;
+        i_happinessDecayRatePerSecond = happinessDecayRatePerSecond;
+        i_energyDecayRatePerSecond = energyDecayRatePerSecond;
+        i_funDecayRatePerSecond = funDecayRatePerSecond;
+        i_hygieneDecayRatePerSecond = hygieneDecayRatePerSecond;
         i_growthInterval = growthInterval;
         i_hungerToleranceInterval = hungerToleranceInterval;
         i_sadToleranceInterval = sadToleranceInterval;
@@ -251,7 +252,7 @@ contract Tamagotchi is
             // HUNGER
             _applyDecay(
                 i,
-                i_hungerDecayInterval,
+                i_hungerDecayRatePerSecond,
                 s_tokenIdToHungerLastTimestamp,
                 s_tokenIdToHunger
             );
@@ -259,7 +260,7 @@ contract Tamagotchi is
             // HAPPINESS
             _applyDecay(
                 i,
-                i_happinessDecayInterval,
+                i_happinessDecayRatePerSecond,
                 s_tokenIdToHappinessLastTimestamp,
                 s_tokenIdToHappiness
             );
@@ -267,7 +268,7 @@ contract Tamagotchi is
             // ENERGY
             _applyDecay(
                 i,
-                i_energyDecayInterval,
+                i_energyDecayRatePerSecond,
                 s_tokenIdToEnergyLastTimestamp,
                 s_tokenIdToEnergy
             );
@@ -275,7 +276,7 @@ contract Tamagotchi is
             // FUN
             _applyDecay(
                 i,
-                i_funDecayInterval,
+                i_funDecayRatePerSecond,
                 s_tokenIdToFunLastTimestamp,
                 s_tokenIdToFun
             );
@@ -283,7 +284,7 @@ contract Tamagotchi is
             // HYGIENE
             _applyDecay(
                 i,
-                i_hygieneDecayInterval,
+                i_hygieneDecayRatePerSecond,
                 s_tokenIdToHygieneLastTimestamp,
                 s_tokenIdToHygiene
             );
@@ -352,16 +353,15 @@ contract Tamagotchi is
 
     function _applyDecay(
         uint256 tokenId,
-        uint256 interval,
+        uint256 decayRatePerSecond,
         mapping(uint256 => uint256) storage lastTimestamp,
         mapping(uint256 => uint256) storage stateLevel
     ) internal {
         uint256 lastStamp = lastTimestamp[tokenId];
-        if ((block.timestamp - lastStamp) > interval) {
-            uint256 decay = (30 * (block.timestamp - lastStamp)) / interval;
-            stateLevel[tokenId] = _max(stateLevel[tokenId] - decay, 0);
-            lastTimestamp[tokenId] = block.timestamp;
-        }
+        uint256 decay = (decayRatePerSecond * (block.timestamp - lastStamp)) /
+            DECAY_PRECISION;
+        stateLevel[tokenId] = _max(stateLevel[tokenId] - decay, 0);
+        lastTimestamp[tokenId] = block.timestamp;
     }
 
     function _chooseState(uint256 tokenId) internal view returns (PetState) {
