@@ -28,7 +28,7 @@ contract Tamagotchi is
         LETHARGIC
     }
 
-    //events
+    // events
     event NftMinted(address owner, uint256 tokenId);
     event Feeding(address sender, uint256 tokenId, uint256 hungerLevel);
     event Playing(address sender, uint256 tokenId, uint256 funLevel);
@@ -39,14 +39,14 @@ contract Tamagotchi is
     event RequestSent(uint256 requestId, uint32 numWords);
     event PetDeathAgeAssigned(uint256 requestId, uint256 deathAge);
 
-    //errors
+    // errors
     error Tamagotchi__NotAuthorized();
     error Tamagotchi__NotValidToken();
     error Tamagotchi__UpkeepNotNeeded();
     error Tamagotchi__PetIsDead();
     error Tamagotchi__RequestNotFound();
 
-    //Variables
+    // Variables
     uint256 private s_tokenCounter;
     uint256 private immutable i_interval;
     uint256 private s_lastTimeStamp;
@@ -89,7 +89,7 @@ contract Tamagotchi is
     mapping(uint256 => uint256) s_tokenIdToHygieneLastTimestamp;
     mapping(uint256 => uint256) s_tokenIdToDeathAge;
 
-    //Chainlink VRF variables
+    // Chainlink VRF variables
     mapping(uint256 => uint256) s_requestIdToTokenId;
     mapping(uint256 => bool) s_requestIdExists;
     uint256 private immutable i_subscriptionId;
@@ -99,7 +99,7 @@ contract Tamagotchi is
     uint16 private constant NUM_WORDS = 1;
     address private immutable i_vrfCoordinator;
 
-    //modifiers
+    // modifiers
     modifier onlyAuthorizedPersons(uint256 tokenId) {
         address owner = _ownerOf(tokenId);
         if (!_isAuthorized(owner, msg.sender, tokenId))
@@ -118,6 +118,7 @@ contract Tamagotchi is
         _;
     }
 
+    // Constructor
     constructor(
         uint256 interval,
         uint256 hungerDecayRatePerSecond,
@@ -171,6 +172,7 @@ contract Tamagotchi is
         s_lastProcessedTokenId = 0;
     }
 
+    // Mint NFTs (Pets)
     function mintNft() external {
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenIdToPetStage[s_tokenCounter] = PetStage.BABY;
@@ -218,18 +220,84 @@ contract Tamagotchi is
         s_tokenCounter++;
     }
 
-    function fulfillRandomWords(
-        uint256 _requestId,
-        uint256[] calldata _randomWords
-    ) internal override {
-        if (!s_requestIdExists[_requestId])
-            revert Tamagotchi__RequestNotFound();
-        uint256 tokenId = s_requestIdToTokenId[_requestId];
-        uint256 deathAge = (_randomWords[0] % 16) + 5;
-        s_tokenIdToDeathAge[tokenId] = deathAge;
-        emit PetDeathAgeAssigned(_requestId, deathAge);
+    // Interaction functions
+    function feed(
+        uint256 tokenId
+    )
+        external
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
+        s_tokenIdToHunger[tokenId] = _min(s_tokenIdToHunger[tokenId] + 30, 100);
+        s_tokenIdToHungerLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
+        emit Feeding(msg.sender, tokenId, s_tokenIdToHunger[tokenId]);
     }
 
+    function play(
+        uint256 tokenId
+    )
+        external
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
+        s_tokenIdToFun[tokenId] = _min(s_tokenIdToFun[tokenId] + 30, 100);
+        s_tokenIdToFunLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
+        emit Playing(msg.sender, tokenId, s_tokenIdToFun[tokenId]);
+    }
+
+    function bathe(
+        uint256 tokenId
+    )
+        external
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
+        s_tokenIdToHygiene[tokenId] = _min(
+            s_tokenIdToHygiene[tokenId] + 30,
+            100
+        );
+        s_tokenIdToHygieneLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
+        emit Bathing(msg.sender, tokenId, s_tokenIdToHygiene[tokenId]);
+    }
+
+    function cuddle(
+        uint256 tokenId
+    )
+        external
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
+        s_tokenIdToHappiness[tokenId] = _min(
+            s_tokenIdToHappiness[tokenId] + 30,
+            100
+        );
+        s_tokenIdToHappinessLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
+        emit Cuddling(msg.sender, tokenId, s_tokenIdToHappiness[tokenId]);
+    }
+
+    function sleep(
+        uint256 tokenId
+    )
+        external
+        onlyAuthorizedPersons(tokenId)
+        isValidToken(tokenId)
+        isAlive(tokenId)
+    {
+        s_tokenIdToEnergy[tokenId] = _min(s_tokenIdToEnergy[tokenId] + 30, 100);
+        s_tokenIdToEnergyLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
+        emit Sleeping(msg.sender, tokenId, s_tokenIdToEnergy[tokenId]);
+    }
+
+    // Chainlik Automation
     function checkUpkeep(
         bytes calldata
     ) external view override returns (bool upkeepNeeded, bytes memory) {
@@ -291,6 +359,7 @@ contract Tamagotchi is
 
             s_tokenIdToPetState[i] = _chooseState(i);
 
+            // Handle pet aging and stage progression
             if (
                 block.timestamp - s_tokenIdToGrowthLastTimestamp[i] >
                 i_growthInterval
@@ -307,6 +376,7 @@ contract Tamagotchi is
                 }
             }
 
+            // Handle death due to ignorance
             uint256 timestamp = block.timestamp;
             if (
                 _applyDeathStage(
@@ -358,8 +428,70 @@ contract Tamagotchi is
         s_lastProcessedTokenId += 10;
     }
 
-    //Helper functions
+    // Returns the metadata URI for a given tokenId
+    function tokenURI(
+        uint256 tokenId
+    ) public view virtual override returns (string memory) {
+        string memory imageURI;
+        if (s_tokenIdToPetState[tokenId] == PetState.HAPPY)
+            imageURI = s_happyImageUri;
+        else if (s_tokenIdToPetState[tokenId] == PetState.SAD)
+            imageURI = s_sadImageUri;
+        else if (s_tokenIdToPetState[tokenId] == PetState.NEUTRAL)
+            imageURI = s_neutralImageUri;
+        else if (s_tokenIdToPetState[tokenId] == PetState.HUNGRY)
+            imageURI = s_hungryImageUri;
+        else if (s_tokenIdToPetState[tokenId] == PetState.BORED)
+            imageURI = s_boredImageUri;
+        else if (s_tokenIdToPetState[tokenId] == PetState.STINKY)
+            imageURI = s_stinkyImageUri;
+        else if (s_tokenIdToPetState[tokenId] == PetState.LETHARGIC)
+            imageURI = s_lethargicImageUri;
+        return
+            string(
+                abi.encodePacked(
+                    _baseURI(),
+                    Base64.encode(
+                        bytes(
+                            abi.encodePacked(
+                                '{"name": "Tamagotchi #',
+                                Strings.toString(tokenId),
+                                '", "description":"A cute on-chain Tamagotchi pet.", ',
+                                '"attributes":[',
+                                '{"trait_type":"happiness","value":',
+                                Strings.toString(s_tokenIdToHappiness[tokenId]),
+                                '}, {"trait_type":"hunger","value":',
+                                Strings.toString(s_tokenIdToHunger[tokenId]),
+                                '}, {"trait_type":"boredom","value":',
+                                Strings.toString(s_tokenIdToFun[tokenId]),
+                                '}, {"trait_type":"hygiene","value":',
+                                Strings.toString(s_tokenIdToHygiene[tokenId]),
+                                '}, {"trait_type":"energy","value":',
+                                Strings.toString(s_tokenIdToEnergy[tokenId]),
+                                '}], "image":"',
+                                imageURI,
+                                '"}'
+                            )
+                        )
+                    )
+                )
+            );
+    }
 
+    // Chainlink VRF
+    function fulfillRandomWords(
+        uint256 _requestId,
+        uint256[] calldata _randomWords
+    ) internal override {
+        if (!s_requestIdExists[_requestId])
+            revert Tamagotchi__RequestNotFound();
+        uint256 tokenId = s_requestIdToTokenId[_requestId];
+        uint256 deathAge = (_randomWords[0] % 16) + 5;
+        s_tokenIdToDeathAge[tokenId] = deathAge;
+        emit PetDeathAgeAssigned(_requestId, deathAge);
+    }
+
+    //Helper functions (Internal)
     function _applyDecay(
         uint256 tokenId,
         uint256 decayRatePerSecond,
@@ -444,132 +576,7 @@ contract Tamagotchi is
         else return b;
     }
 
-    function feed(
-        uint256 tokenId
-    )
-        external
-        onlyAuthorizedPersons(tokenId)
-        isValidToken(tokenId)
-        isAlive(tokenId)
-    {
-        s_tokenIdToHunger[tokenId] = _min(s_tokenIdToHunger[tokenId] + 30, 100);
-        s_tokenIdToHungerLastTimestamp[tokenId] = block.timestamp;
-        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Feeding(msg.sender, tokenId, s_tokenIdToHunger[tokenId]);
-    }
-
-    function play(
-        uint256 tokenId
-    )
-        external
-        onlyAuthorizedPersons(tokenId)
-        isValidToken(tokenId)
-        isAlive(tokenId)
-    {
-        s_tokenIdToFun[tokenId] = _min(s_tokenIdToFun[tokenId] + 30, 100);
-        s_tokenIdToFunLastTimestamp[tokenId] = block.timestamp;
-        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Playing(msg.sender, tokenId, s_tokenIdToFun[tokenId]);
-    }
-
-    function bathe(
-        uint256 tokenId
-    )
-        external
-        onlyAuthorizedPersons(tokenId)
-        isValidToken(tokenId)
-        isAlive(tokenId)
-    {
-        s_tokenIdToHygiene[tokenId] = _min(
-            s_tokenIdToHygiene[tokenId] + 30,
-            100
-        );
-        s_tokenIdToHygieneLastTimestamp[tokenId] = block.timestamp;
-        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Bathing(msg.sender, tokenId, s_tokenIdToHygiene[tokenId]);
-    }
-
-    function cuddle(
-        uint256 tokenId
-    )
-        external
-        onlyAuthorizedPersons(tokenId)
-        isValidToken(tokenId)
-        isAlive(tokenId)
-    {
-        s_tokenIdToHappiness[tokenId] = _min(
-            s_tokenIdToHappiness[tokenId] + 30,
-            100
-        );
-        s_tokenIdToHappinessLastTimestamp[tokenId] = block.timestamp;
-        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Cuddling(msg.sender, tokenId, s_tokenIdToHappiness[tokenId]);
-    }
-
-    function sleep(
-        uint256 tokenId
-    )
-        external
-        onlyAuthorizedPersons(tokenId)
-        isValidToken(tokenId)
-        isAlive(tokenId)
-    {
-        s_tokenIdToEnergy[tokenId] = _min(s_tokenIdToEnergy[tokenId] + 30, 100);
-        s_tokenIdToEnergyLastTimestamp[tokenId] = block.timestamp;
-        s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Sleeping(msg.sender, tokenId, s_tokenIdToEnergy[tokenId]);
-    }
-
     function _baseURI() internal view virtual override returns (string memory) {
         return "data:application/json;base64,";
-    }
-
-    function tokenURI(
-        uint256 tokenId
-    ) public view virtual override returns (string memory) {
-        string memory imageURI;
-        if (s_tokenIdToPetState[tokenId] == PetState.HAPPY)
-            imageURI = s_happyImageUri;
-        else if (s_tokenIdToPetState[tokenId] == PetState.SAD)
-            imageURI = s_sadImageUri;
-        else if (s_tokenIdToPetState[tokenId] == PetState.NEUTRAL)
-            imageURI = s_neutralImageUri;
-        else if (s_tokenIdToPetState[tokenId] == PetState.HUNGRY)
-            imageURI = s_hungryImageUri;
-        else if (s_tokenIdToPetState[tokenId] == PetState.BORED)
-            imageURI = s_boredImageUri;
-        else if (s_tokenIdToPetState[tokenId] == PetState.STINKY)
-            imageURI = s_stinkyImageUri;
-        else if (s_tokenIdToPetState[tokenId] == PetState.LETHARGIC)
-            imageURI = s_lethargicImageUri;
-        return
-            string(
-                abi.encodePacked(
-                    _baseURI(),
-                    Base64.encode(
-                        bytes(
-                            abi.encodePacked(
-                                '{"name": "Tamagotchi #',
-                                Strings.toString(tokenId),
-                                '", "description":"A cute on-chain Tamagotchi pet.", ',
-                                '"attributes":[',
-                                '{"trait_type":"happiness","value":',
-                                Strings.toString(s_tokenIdToHappiness[tokenId]),
-                                '}, {"trait_type":"hunger","value":',
-                                Strings.toString(s_tokenIdToHunger[tokenId]),
-                                '}, {"trait_type":"boredom","value":',
-                                Strings.toString(s_tokenIdToFun[tokenId]),
-                                '}, {"trait_type":"hygiene","value":',
-                                Strings.toString(s_tokenIdToHygiene[tokenId]),
-                                '}, {"trait_type":"energy","value":',
-                                Strings.toString(s_tokenIdToEnergy[tokenId]),
-                                '}], "image":"',
-                                imageURI,
-                                '"}'
-                            )
-                        )
-                    )
-                )
-            );
     }
 }
