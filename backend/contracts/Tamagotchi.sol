@@ -313,48 +313,53 @@ contract Tamagotchi is
                     continue;
                 }
             }
+
             uint256 timestamp = block.timestamp;
             if (
-                s_tokenIdToHunger[i] == 0 &&
-                timestamp - s_tokenIdToHungerLastTimestamp[i] >
-                i_hungerToleranceInterval
-            ) {
-                s_tokenIdToPetStage[i] = PetStage.DEAD;
-                emit PetDied(i, block.timestamp);
-                continue;
-            } else if (
-                s_tokenIdToHappiness[i] == 0 &&
-                timestamp - s_tokenIdToHappinessLastTimestamp[i] >
-                i_sadToleranceInterval
-            ) {
-                s_tokenIdToPetStage[i] = PetStage.DEAD;
-                emit PetDied(i, block.timestamp);
-                continue;
-            } else if (
-                s_tokenIdToFun[i] == 0 &&
-                timestamp - s_tokenIdToFunLastTimestamp[i] >
-                i_boredToleranceInterval
-            ) {
-                s_tokenIdToPetStage[i] = PetStage.DEAD;
-                emit PetDied(i, block.timestamp);
-                continue;
-            } else if (
-                s_tokenIdToHygiene[i] == 0 &&
-                timestamp - s_tokenIdToHygieneLastTimestamp[i] >
-                i_stinkyToleranceInterval
-            ) {
-                s_tokenIdToPetStage[i] = PetStage.DEAD;
-                emit PetDied(i, block.timestamp);
-                continue;
-            } else if (
-                s_tokenIdToEnergy[i] == 0 &&
-                timestamp - s_tokenIdToEnergyLastTimestamp[i] >
-                i_sleepToleranceInterval
-            ) {
-                s_tokenIdToPetStage[i] = PetStage.DEAD;
-                emit PetDied(i, block.timestamp);
-                continue;
-            }
+                _applyDeathStage(
+                    i,
+                    timestamp,
+                    i_hungerToleranceInterval,
+                    s_tokenIdToHunger[i],
+                    s_tokenIdToHungerLastTimestamp[i]
+                )
+            ) continue;
+            if (
+                _applyDeathStage(
+                    i,
+                    timestamp,
+                    i_sadToleranceInterval,
+                    s_tokenIdToHappiness[i],
+                    s_tokenIdToHappinessLastTimestamp[i]
+                )
+            ) continue;
+            if (
+                _applyDeathStage(
+                    i,
+                    timestamp,
+                    i_boredToleranceInterval,
+                    s_tokenIdToFun[i],
+                    s_tokenIdToFunLastTimestamp[i]
+                )
+            ) continue;
+            if (
+                _applyDeathStage(
+                    i,
+                    timestamp,
+                    i_stinkyToleranceInterval,
+                    s_tokenIdToHygiene[i],
+                    s_tokenIdToHygieneLastTimestamp[i]
+                )
+            ) continue;
+            if (
+                _applyDeathStage(
+                    i,
+                    timestamp,
+                    i_sleepToleranceInterval,
+                    s_tokenIdToEnergy[i],
+                    s_tokenIdToEnergyLastTimestamp[i]
+                )
+            ) continue;
         }
 
         s_lastProcessedTokenId += 10;
@@ -371,6 +376,20 @@ contract Tamagotchi is
             DECAY_PRECISION;
         stateLevel[tokenId] = _max(stateLevel[tokenId] - decay, 0);
         lastTimestamp[tokenId] = block.timestamp;
+    }
+
+    function _applyDeathStage(
+        uint256 tokenId,
+        uint256 timestamp,
+        uint256 toleranceInterval,
+        uint256 stateLevel,
+        uint256 lastTimestamp
+    ) internal returns (bool) {
+        if (stateLevel == 0 && timestamp - lastTimestamp > toleranceInterval) {
+            s_tokenIdToPetStage[tokenId] = PetStage.DEAD;
+            emit PetDied(tokenId, timestamp);
+            return true;
+        } else return false;
     }
 
     function _chooseState(uint256 tokenId) internal view returns (PetState) {
