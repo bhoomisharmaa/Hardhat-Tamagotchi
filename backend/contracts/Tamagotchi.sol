@@ -12,6 +12,25 @@ contract Tamagotchi is
     AutomationCompatibleInterface,
     VRFConsumerBaseV2Plus
 {
+    //structs
+    struct PetStats {
+        uint256 hunger;
+        uint256 happiness;
+        uint256 cleanliness;
+        uint256 entertainment;
+        uint256 energy;
+    }
+
+    struct PetTimestamps {
+        uint256 fedAt;
+        uint256 cuddledAt;
+        uint256 bathedAt;
+        uint256 playedAt;
+        uint256 sleptAt;
+        uint256 grewAt;
+        uint256 mintedAt;
+    }
+
     // enums
     enum PetStage {
         BABY,
@@ -75,18 +94,8 @@ contract Tamagotchi is
     mapping(uint256 => uint) s_tokenIdToPetsAge;
     mapping(uint256 => PetStage) s_tokenIdToPetStage;
     mapping(uint256 => PetState) s_tokenIdToPetState;
-    mapping(uint256 => uint256) s_tokenIdToHappiness;
-    mapping(uint256 => uint256) s_tokenIdToHunger;
-    mapping(uint256 => uint256) s_tokenIdToFun;
-    mapping(uint256 => uint256) s_tokenIdToHygiene;
-    mapping(uint256 => uint256) s_tokenIdToEnergy;
-    mapping(uint256 => uint256) s_tokenIdToMintTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToGrowthLastTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToHungerLastTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToHappinessLastTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToFunLastTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToEnergyLastTimestamp;
-    mapping(uint256 => uint256) s_tokenIdToHygieneLastTimestamp;
+    mapping(uint256 => PetStats) s_tokenIdToPetStats;
+    mapping(uint256 => PetTimestamps) s_tokenIdToPetTimestamps;
     mapping(uint256 => uint256) s_tokenIdToDeathAge;
 
     // Chainlink VRF variables
@@ -181,20 +190,20 @@ contract Tamagotchi is
         uint256 _lastTimestamp = block.timestamp;
 
         // last timestamp for each state
-        s_tokenIdToMintTimestamp[s_tokenCounter] = _lastTimestamp;
-        s_tokenIdToGrowthLastTimestamp[s_tokenCounter] = _lastTimestamp;
-        s_tokenIdToHungerLastTimestamp[s_tokenCounter] = _lastTimestamp;
-        s_tokenIdToHappinessLastTimestamp[s_tokenCounter] = _lastTimestamp;
-        s_tokenIdToEnergyLastTimestamp[s_tokenCounter] = _lastTimestamp;
-        s_tokenIdToFunLastTimestamp[s_tokenCounter] = _lastTimestamp;
-        s_tokenIdToHygieneLastTimestamp[s_tokenCounter] = _lastTimestamp;
+        s_tokenIdToPetTimestamps[s_tokenCounter].mintedAt = _lastTimestamp;
+        s_tokenIdToPetTimestamps[s_tokenCounter].bathedAt = _lastTimestamp;
+        s_tokenIdToPetTimestamps[s_tokenCounter].cuddledAt = _lastTimestamp;
+        s_tokenIdToPetTimestamps[s_tokenCounter].fedAt = _lastTimestamp;
+        s_tokenIdToPetTimestamps[s_tokenCounter].grewAt = _lastTimestamp;
+        s_tokenIdToPetTimestamps[s_tokenCounter].playedAt = _lastTimestamp;
+        s_tokenIdToPetTimestamps[s_tokenCounter].sleptAt = _lastTimestamp;
 
         //attributes
-        s_tokenIdToHunger[s_tokenCounter] = 30;
-        s_tokenIdToHappiness[s_tokenCounter] = 70;
-        s_tokenIdToEnergy[s_tokenCounter] = 70;
-        s_tokenIdToHygiene[s_tokenCounter] = 20;
-        s_tokenIdToFun[s_tokenCounter] = 70;
+        s_tokenIdToPetStats[s_tokenCounter].hunger = 30;
+        s_tokenIdToPetStats[s_tokenCounter].happiness = 70;
+        s_tokenIdToPetStats[s_tokenCounter].energy = 70;
+        s_tokenIdToPetStats[s_tokenCounter].cleanliness = 20;
+        s_tokenIdToPetStats[s_tokenCounter].entertainment = 70;
         s_tokenIdToPetState[s_tokenCounter] = PetState.STINKY;
 
         //Chainlink VRF
@@ -229,10 +238,13 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToHunger[tokenId] = _min(s_tokenIdToHunger[tokenId] + 30, 100);
-        s_tokenIdToHungerLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetStats[tokenId].hunger = _min(
+            s_tokenIdToPetStats[tokenId].hunger + 30,
+            100
+        );
+        s_tokenIdToPetTimestamps[tokenId].fedAt = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Feeding(msg.sender, tokenId, s_tokenIdToHunger[tokenId]);
+        emit Feeding(msg.sender, tokenId, s_tokenIdToPetStats[tokenId].hunger);
     }
 
     function play(
@@ -243,10 +255,17 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToFun[tokenId] = _min(s_tokenIdToFun[tokenId] + 30, 100);
-        s_tokenIdToFunLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetStats[tokenId].entertainment = _min(
+            s_tokenIdToPetStats[tokenId].entertainment + 30,
+            100
+        );
+        s_tokenIdToPetTimestamps[tokenId].playedAt = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Playing(msg.sender, tokenId, s_tokenIdToFun[tokenId]);
+        emit Playing(
+            msg.sender,
+            tokenId,
+            s_tokenIdToPetStats[tokenId].entertainment
+        );
     }
 
     function bathe(
@@ -257,13 +276,17 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToHygiene[tokenId] = _min(
-            s_tokenIdToHygiene[tokenId] + 30,
+        s_tokenIdToPetStats[tokenId].cleanliness = _min(
+            s_tokenIdToPetStats[tokenId].cleanliness + 30,
             100
         );
-        s_tokenIdToHygieneLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetTimestamps[tokenId].bathedAt = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Bathing(msg.sender, tokenId, s_tokenIdToHygiene[tokenId]);
+        emit Bathing(
+            msg.sender,
+            tokenId,
+            s_tokenIdToPetStats[tokenId].cleanliness
+        );
     }
 
     function cuddle(
@@ -274,13 +297,17 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToHappiness[tokenId] = _min(
-            s_tokenIdToHappiness[tokenId] + 30,
+        s_tokenIdToPetStats[tokenId].happiness = _min(
+            s_tokenIdToPetStats[tokenId].happiness + 30,
             100
         );
-        s_tokenIdToHappinessLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetTimestamps[tokenId].cuddledAt = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Cuddling(msg.sender, tokenId, s_tokenIdToHappiness[tokenId]);
+        emit Cuddling(
+            msg.sender,
+            tokenId,
+            s_tokenIdToPetStats[tokenId].happiness
+        );
     }
 
     function sleep(
@@ -291,10 +318,13 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
-        s_tokenIdToEnergy[tokenId] = _min(s_tokenIdToEnergy[tokenId] + 30, 100);
-        s_tokenIdToEnergyLastTimestamp[tokenId] = block.timestamp;
+        s_tokenIdToPetStats[tokenId].energy = _min(
+            s_tokenIdToPetStats[tokenId].energy + 30,
+            100
+        );
+        s_tokenIdToPetTimestamps[tokenId].sleptAt = block.timestamp;
         s_tokenIdToPetState[tokenId] = _chooseState(tokenId);
-        emit Sleeping(msg.sender, tokenId, s_tokenIdToEnergy[tokenId]);
+        emit Sleeping(msg.sender, tokenId, s_tokenIdToPetStats[tokenId].energy);
     }
 
     // Chainlik Automation
@@ -317,54 +347,57 @@ contract Tamagotchi is
             i++
         ) {
             if (s_tokenIdToPetStage[i] == PetStage.DEAD) continue;
+            uint256 _lastTimestamp = block.timestamp;
+
             // HUNGER
-            _applyDecay(
-                i,
+            s_tokenIdToPetStats[i].hunger = _applyDecay(
                 i_hungerDecayRatePerSecond,
-                s_tokenIdToHungerLastTimestamp,
-                s_tokenIdToHunger
+                s_tokenIdToPetTimestamps[i].fedAt,
+                s_tokenIdToPetStats[i].hunger
             );
+            s_tokenIdToPetTimestamps[i].fedAt = _lastTimestamp;
 
             // HAPPINESS
-            _applyDecay(
-                i,
+            s_tokenIdToPetTimestamps[i].fedAt = s_tokenIdToPetStats[i]
+                .happiness = _applyDecay(
                 i_happinessDecayRatePerSecond,
-                s_tokenIdToHappinessLastTimestamp,
-                s_tokenIdToHappiness
+                s_tokenIdToPetTimestamps[i].cuddledAt,
+                s_tokenIdToPetStats[i].happiness
             );
+            s_tokenIdToPetTimestamps[i].cuddledAt = _lastTimestamp;
 
             // ENERGY
-            _applyDecay(
-                i,
+            s_tokenIdToPetStats[i].energy = _applyDecay(
                 i_energyDecayRatePerSecond,
-                s_tokenIdToEnergyLastTimestamp,
-                s_tokenIdToEnergy
+                s_tokenIdToPetTimestamps[i].sleptAt,
+                s_tokenIdToPetStats[i].energy
             );
+            s_tokenIdToPetTimestamps[i].sleptAt = _lastTimestamp;
 
             // FUN
-            _applyDecay(
-                i,
+            s_tokenIdToPetStats[i].entertainment = _applyDecay(
                 i_funDecayRatePerSecond,
-                s_tokenIdToFunLastTimestamp,
-                s_tokenIdToFun
+                s_tokenIdToPetTimestamps[i].playedAt,
+                s_tokenIdToPetStats[i].entertainment
             );
+            s_tokenIdToPetTimestamps[i].playedAt = _lastTimestamp;
 
             // HYGIENE
-            _applyDecay(
-                i,
+            s_tokenIdToPetStats[i].cleanliness = _applyDecay(
                 i_hygieneDecayRatePerSecond,
-                s_tokenIdToHygieneLastTimestamp,
-                s_tokenIdToHygiene
+                s_tokenIdToPetTimestamps[i].bathedAt,
+                s_tokenIdToPetStats[i].cleanliness
             );
+            s_tokenIdToPetTimestamps[i].bathedAt = _lastTimestamp;
 
             s_tokenIdToPetState[i] = _chooseState(i);
 
             // Handle pet aging and stage progression
             if (
-                block.timestamp - s_tokenIdToGrowthLastTimestamp[i] >
+                block.timestamp - s_tokenIdToPetTimestamps[i].grewAt >
                 i_growthInterval
             ) {
-                s_tokenIdToGrowthLastTimestamp[i] = block.timestamp;
+                s_tokenIdToPetTimestamps[i].grewAt = block.timestamp;
                 s_tokenIdToPetsAge[i]++;
                 s_tokenIdToPetStage[i] = _chooseStage(
                     s_tokenIdToPetsAge[i],
@@ -383,8 +416,8 @@ contract Tamagotchi is
                     i,
                     timestamp,
                     i_hungerToleranceInterval,
-                    s_tokenIdToHunger[i],
-                    s_tokenIdToHungerLastTimestamp[i]
+                    s_tokenIdToPetStats[i].hunger,
+                    s_tokenIdToPetTimestamps[i].fedAt
                 )
             ) continue;
             if (
@@ -392,8 +425,8 @@ contract Tamagotchi is
                     i,
                     timestamp,
                     i_sadToleranceInterval,
-                    s_tokenIdToHappiness[i],
-                    s_tokenIdToHappinessLastTimestamp[i]
+                    s_tokenIdToPetStats[i].happiness,
+                    s_tokenIdToPetTimestamps[i].cuddledAt
                 )
             ) continue;
             if (
@@ -401,8 +434,8 @@ contract Tamagotchi is
                     i,
                     timestamp,
                     i_boredToleranceInterval,
-                    s_tokenIdToFun[i],
-                    s_tokenIdToFunLastTimestamp[i]
+                    s_tokenIdToPetStats[i].entertainment,
+                    s_tokenIdToPetTimestamps[i].playedAt
                 )
             ) continue;
             if (
@@ -410,8 +443,8 @@ contract Tamagotchi is
                     i,
                     timestamp,
                     i_stinkyToleranceInterval,
-                    s_tokenIdToHygiene[i],
-                    s_tokenIdToHygieneLastTimestamp[i]
+                    s_tokenIdToPetStats[i].cleanliness,
+                    s_tokenIdToPetTimestamps[i].bathedAt
                 )
             ) continue;
             if (
@@ -419,8 +452,8 @@ contract Tamagotchi is
                     i,
                     timestamp,
                     i_sleepToleranceInterval,
-                    s_tokenIdToEnergy[i],
-                    s_tokenIdToEnergyLastTimestamp[i]
+                    s_tokenIdToPetStats[i].energy,
+                    s_tokenIdToPetTimestamps[i].sleptAt
                 )
             ) continue;
         }
@@ -534,68 +567,16 @@ contract Tamagotchi is
         return s_tokenIdToPetState[tokenId];
     }
 
-    function tokenIdToHappiness(
+    function getTokenIdToPetStats(
         uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToHappiness[tokenId];
+    ) external view returns (PetStats memory) {
+        return s_tokenIdToPetStats[tokenId];
     }
 
-    function tokenIdToHunger(uint256 tokenId) external view returns (uint256) {
-        return s_tokenIdToHunger[tokenId];
-    }
-
-    function tokenIdToFun(uint256 tokenId) external view returns (uint256) {
-        return s_tokenIdToFun[tokenId];
-    }
-
-    function tokenIdToHygiene(uint256 tokenId) external view returns (uint256) {
-        return s_tokenIdToHygiene[tokenId];
-    }
-
-    function tokenIdToEnergy(uint256 tokenId) external view returns (uint256) {
-        return s_tokenIdToEnergy[tokenId];
-    }
-
-    function tokenIdToMintTimestamp(
+    function getTokenIdToPetTimestamps(
         uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToMintTimestamp[tokenId];
-    }
-
-    function tokenIdToGrowthLastTimestamp(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToGrowthLastTimestamp[tokenId];
-    }
-
-    function tokenIdToHungerLastTimestamp(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToHungerLastTimestamp[tokenId];
-    }
-
-    function tokenIdToHappinessLastTimestamp(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToHappinessLastTimestamp[tokenId];
-    }
-
-    function tokenIdToFunLastTimestamp(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToFunLastTimestamp[tokenId];
-    }
-
-    function tokenIdToEnergyLastTimestamp(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToEnergyLastTimestamp[tokenId];
-    }
-
-    function tokenIdToHygieneLastTimestamp(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToHygieneLastTimestamp[tokenId];
+    ) external view returns (PetTimestamps memory) {
+        return s_tokenIdToPetTimestamps[tokenId];
     }
 
     function tokenIdToDeathAge(
@@ -663,15 +644,25 @@ contract Tamagotchi is
                                 '", "description":"A cute on-chain Tamagotchi pet.", ',
                                 '"attributes":[',
                                 '{"trait_type":"happiness","value":',
-                                Strings.toString(s_tokenIdToHappiness[tokenId]),
+                                Strings.toString(
+                                    s_tokenIdToPetStats[tokenId].happiness
+                                ),
                                 '}, {"trait_type":"hunger","value":',
-                                Strings.toString(s_tokenIdToHunger[tokenId]),
+                                Strings.toString(
+                                    s_tokenIdToPetStats[tokenId].hunger
+                                ),
                                 '}, {"trait_type":"boredom","value":',
-                                Strings.toString(s_tokenIdToFun[tokenId]),
+                                Strings.toString(
+                                    s_tokenIdToPetStats[tokenId].entertainment
+                                ),
                                 '}, {"trait_type":"hygiene","value":',
-                                Strings.toString(s_tokenIdToHygiene[tokenId]),
+                                Strings.toString(
+                                    s_tokenIdToPetStats[tokenId].cleanliness
+                                ),
                                 '}, {"trait_type":"energy","value":',
-                                Strings.toString(s_tokenIdToEnergy[tokenId]),
+                                Strings.toString(
+                                    s_tokenIdToPetStats[tokenId].energy
+                                ),
                                 '}], "image":"',
                                 imageURI,
                                 '"}'
@@ -697,16 +688,13 @@ contract Tamagotchi is
 
     //Helper functions (Internal)
     function _applyDecay(
-        uint256 tokenId,
         uint256 decayRatePerSecond,
-        mapping(uint256 => uint256) storage _lastTimestamp,
-        mapping(uint256 => uint256) storage stateLevel
-    ) internal {
-        uint256 lastStamp = _lastTimestamp[tokenId];
-        uint256 decay = (decayRatePerSecond * (block.timestamp - lastStamp)) /
-            DECAY_PRECISION;
-        stateLevel[tokenId] = _max(stateLevel[tokenId] - decay, 0);
-        _lastTimestamp[tokenId] = block.timestamp;
+        uint256 _lastTimestamp,
+        uint256 stateLevel
+    ) internal view returns (uint256) {
+        uint256 decay = (decayRatePerSecond *
+            (block.timestamp - _lastTimestamp)) / DECAY_PRECISION;
+        return _max(stateLevel - decay, 0);
     }
 
     function _applyDeathStage(
@@ -724,11 +712,11 @@ contract Tamagotchi is
     }
 
     function _chooseState(uint256 tokenId) internal view returns (PetState) {
-        uint256 hunger = s_tokenIdToHunger[tokenId];
-        uint256 happiness = s_tokenIdToHappiness[tokenId];
-        uint256 energy = s_tokenIdToEnergy[tokenId];
-        uint256 fun = s_tokenIdToFun[tokenId];
-        uint256 hygiene = s_tokenIdToHygiene[tokenId];
+        uint256 hunger = s_tokenIdToPetStats[tokenId].hunger;
+        uint256 happiness = s_tokenIdToPetStats[tokenId].happiness;
+        uint256 energy = s_tokenIdToPetStats[tokenId].energy;
+        uint256 fun = s_tokenIdToPetStats[tokenId].entertainment;
+        uint256 hygiene = s_tokenIdToPetStats[tokenId].cleanliness;
         uint256 minimumLevel = 100;
 
         PetState chosenState = PetState.HAPPY;
@@ -754,7 +742,7 @@ contract Tamagotchi is
             chosenState = PetState.STINKY;
         }
         if (happiness > 40 && happiness <= 60 && happiness < minimumLevel) {
-            minimumLevel = s_tokenIdToHappiness[tokenId];
+            minimumLevel = happiness;
             chosenState = PetState.NEUTRAL;
         }
 
