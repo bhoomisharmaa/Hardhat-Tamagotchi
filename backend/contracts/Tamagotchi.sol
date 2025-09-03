@@ -66,9 +66,8 @@ contract Tamagotchi is
     error Tamagotchi__RequestNotFound();
 
     // Variables
-    uint256 private s_tokenCounter;
+    uint256 private constant DECAY_PRECISION = 1e18;
     uint256 private immutable i_interval;
-    uint256 private s_lastTimeStamp;
     uint256 private immutable i_hungerDecayRatePerSecond;
     uint256 private immutable i_happinessDecayRatePerSecond;
     uint256 private immutable i_energyDecayRatePerSecond;
@@ -81,7 +80,8 @@ contract Tamagotchi is
     uint256 private immutable i_boredToleranceInterval;
     uint256 private immutable i_sleepToleranceInterval;
     uint256 private s_lastProcessedTokenId;
-    uint256 private constant DECAY_PRECISION = 1e18;
+    uint256 private s_lastTimeStamp;
+    uint256 private s_tokenCounter;
 
     string private s_happyImageUri;
     string private s_sadImageUri;
