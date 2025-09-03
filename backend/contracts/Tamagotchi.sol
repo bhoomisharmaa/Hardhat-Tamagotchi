@@ -64,6 +64,11 @@ contract Tamagotchi is
     error Tamagotchi__UpkeepNotNeeded();
     error Tamagotchi__PetIsDead();
     error Tamagotchi__RequestNotFound();
+    error Tamagotchi__AlreadyFull();
+    error Tamagotchi__AlreadyEntertained();
+    error Tamagotchi__AlreadyHappy();
+    error Tamagotchi__AlreadyClean();
+    error Tamagotchi__AlreadyEnergized();
 
     // Variables
     uint256 private constant DECAY_PRECISION = 1e18;
@@ -238,6 +243,8 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
+        if (s_tokenIdToPetStats[tokenId].hunger == 100)
+            revert Tamagotchi__AlreadyFull();
         s_tokenIdToPetStats[tokenId].hunger = _min(
             s_tokenIdToPetStats[tokenId].hunger + 30,
             100
@@ -255,6 +262,8 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
+        if (s_tokenIdToPetStats[tokenId].entertainment == 100)
+            revert Tamagotchi__AlreadyEntertained();
         s_tokenIdToPetStats[tokenId].entertainment = _min(
             s_tokenIdToPetStats[tokenId].entertainment + 30,
             100
@@ -276,6 +285,8 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
+        if (s_tokenIdToPetStats[tokenId].cleanliness == 100)
+            revert Tamagotchi__AlreadyClean();
         s_tokenIdToPetStats[tokenId].cleanliness = _min(
             s_tokenIdToPetStats[tokenId].cleanliness + 30,
             100
@@ -297,6 +308,8 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
+        if (s_tokenIdToPetStats[tokenId].happiness == 100)
+            revert Tamagotchi__AlreadyHappy();
         s_tokenIdToPetStats[tokenId].happiness = _min(
             s_tokenIdToPetStats[tokenId].happiness + 30,
             100
@@ -318,6 +331,8 @@ contract Tamagotchi is
         isValidToken(tokenId)
         isAlive(tokenId)
     {
+        if (s_tokenIdToPetStats[tokenId].energy == 100)
+            revert Tamagotchi__AlreadyEnergized();
         s_tokenIdToPetStats[tokenId].energy = _min(
             s_tokenIdToPetStats[tokenId].energy + 30,
             100
