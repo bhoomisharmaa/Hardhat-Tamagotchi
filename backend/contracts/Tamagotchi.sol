@@ -463,105 +463,107 @@ contract Tamagotchi is
 
     // Getter functions
 
-    function tokenCounter() external view returns (uint256) {
+    function getTokenCounter() external view returns (uint256) {
         return s_tokenCounter;
     }
 
-    function interval() external view returns (uint256) {
+    function getInterval() external view returns (uint256) {
         return i_interval;
     }
 
-    function lastTimestamp() external view returns (uint256) {
+    function getLastTimestamp() external view returns (uint256) {
         return s_lastTimeStamp;
     }
 
-    function hungerDecayRatePerSecond() external view returns (uint256) {
+    function getHungerDecayRatePerSecond() external view returns (uint256) {
         return i_hungerDecayRatePerSecond;
     }
 
-    function happinessDecayRatePerSecond() external view returns (uint256) {
+    function getHappinessDecayRatePerSecond() external view returns (uint256) {
         return i_happinessDecayRatePerSecond;
     }
 
-    function energyDecayRatePerSecond() external view returns (uint256) {
+    function getEnergyDecayRatePerSecond() external view returns (uint256) {
         return i_energyDecayRatePerSecond;
     }
 
-    function funDecayRatePerSecond() external view returns (uint256) {
+    function getFunDecayRatePerSecond() external view returns (uint256) {
         return i_funDecayRatePerSecond;
     }
 
-    function hygieneDecayRatePerSecond() external view returns (uint256) {
+    function getHygieneDecayRatePerSecond() external view returns (uint256) {
         return i_hygieneDecayRatePerSecond;
     }
 
-    function growthInterval() external view returns (uint256) {
+    function getGrowthInterval() external view returns (uint256) {
         return i_growthInterval;
     }
 
-    function hungerToleranceInterval() external view returns (uint256) {
+    function getHungerToleranceInterval() external view returns (uint256) {
         return i_hungerToleranceInterval;
     }
 
-    function sadToleranceInterval() external view returns (uint256) {
+    function getSadToleranceInterval() external view returns (uint256) {
         return i_sadToleranceInterval;
     }
 
-    function stinkyToleranceInterval() external view returns (uint256) {
+    function getStinkyToleranceInterval() external view returns (uint256) {
         return i_stinkyToleranceInterval;
     }
 
-    function boredToleranceInterval() external view returns (uint256) {
+    function getBoredToleranceInterval() external view returns (uint256) {
         return i_stinkyToleranceInterval;
     }
 
-    function sleepToleranceInterval() external view returns (uint256) {
+    function getSeepToleranceInterval() external view returns (uint256) {
         return i_sleepToleranceInterval;
     }
 
-    function lastProcessedTokenId() external view returns (uint256) {
+    function getLastProcessedTokenId() external view returns (uint256) {
         return s_lastProcessedTokenId;
     }
 
-    function happyImageUri() external view returns (string memory) {
+    function getHappyImageUri() external view returns (string memory) {
         return s_happyImageUri;
     }
 
-    function sadImageUri() external view returns (string memory) {
+    function getSadImageUri() external view returns (string memory) {
         return s_sadImageUri;
     }
 
-    function neutralImageUri() external view returns (string memory) {
+    function getNeutralImageUri() external view returns (string memory) {
         return s_neutralImageUri;
     }
 
-    function hungryImageUri() external view returns (string memory) {
+    function getHungryImageUri() external view returns (string memory) {
         return s_hungryImageUri;
     }
 
-    function boredImageUri() external view returns (string memory) {
+    function getBoredImageUri() external view returns (string memory) {
         return s_boredImageUri;
     }
 
-    function stinkyImageUri() external view returns (string memory) {
+    function getStinkyImageUri() external view returns (string memory) {
         return s_stinkyImageUri;
     }
 
-    function lethargicImageUri() external view returns (string memory) {
+    function getLethargicImageUri() external view returns (string memory) {
         return s_lethargicImageUri;
     }
 
-    function tokenIdToPetsAge(uint256 tokenId) external view returns (uint256) {
+    function getTokenIdToPetsAge(
+        uint256 tokenId
+    ) external view returns (uint256) {
         return s_tokenIdToPetsAge[tokenId];
     }
 
-    function tokenIdToPetStage(
+    function getTokenIdToPetStage(
         uint256 tokenId
     ) external view returns (PetStage) {
         return s_tokenIdToPetStage[tokenId];
     }
 
-    function tokenIdToPetState(
+    function getTokenIdToPetState(
         uint256 tokenId
     ) external view returns (PetState) {
         return s_tokenIdToPetState[tokenId];
@@ -579,37 +581,37 @@ contract Tamagotchi is
         return s_tokenIdToPetTimestamps[tokenId];
     }
 
-    function tokenIdToDeathAge(
+    function getTokenIdToDeathAge(
         uint256 tokenId
     ) external view returns (uint256) {
         return s_tokenIdToDeathAge[tokenId];
     }
 
-    function subscriptionId() external view returns (uint256) {
+    function getSubscriptionId() external view returns (uint256) {
         return i_subscriptionId;
     }
 
-    function keyHash() external view returns (bytes32) {
+    function getKeyHash() external view returns (bytes32) {
         return i_keyHash;
     }
 
-    function callbackGasLimit() external view returns (uint32) {
+    function getCallbackGasLimit() external view returns (uint32) {
         return i_callbackGasLimit;
     }
 
-    function vrfCoordinator() external view returns (address) {
+    function getVrfCoordinator() external view returns (address) {
         return i_vrfCoordinator;
     }
 
-    function decayPrecision() external pure returns (uint256) {
+    function getDecayPrecision() external pure returns (uint256) {
         return DECAY_PRECISION;
     }
 
-    function RequestConfirmations() external pure returns (uint16) {
+    function getRequestConfirmations() external pure returns (uint16) {
         return REQUEST_CONFIRMATIONS;
     }
 
-    function numWords() external pure returns (uint16) {
+    function getNumWords() external pure returns (uint16) {
         return NUM_WORDS;
     }
 
