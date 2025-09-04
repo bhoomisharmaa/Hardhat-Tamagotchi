@@ -60,6 +60,7 @@ contract Tamagotchi is
 
     // errors
     error Tamagotchi__NotAuthorized();
+    error Tamagotchi__NotOwner();
     error Tamagotchi__NotValidToken();
     error Tamagotchi__UpkeepNotNeeded();
     error Tamagotchi__PetIsDead();
@@ -87,6 +88,7 @@ contract Tamagotchi is
     uint256 private s_lastProcessedTokenId;
     uint256 private s_lastTimeStamp;
     uint256 private s_tokenCounter;
+    uint256 private s_deathAge;
 
     string private s_happyImageUri;
     string private s_sadImageUri;
@@ -102,10 +104,10 @@ contract Tamagotchi is
     mapping(uint256 => PetState) s_tokenIdToPetState;
     mapping(uint256 => PetStats) s_tokenIdToPetStats;
     mapping(uint256 => PetTimestamps) s_tokenIdToPetTimestamps;
-    mapping(uint256 => uint256) s_tokenIdToDeathAge;
+
+    address private immutable i_owner;
 
     // Chainlink VRF variables
-    mapping(uint256 => uint256) s_requestIdToTokenId;
     mapping(uint256 => bool) s_requestIdExists;
     uint256 private immutable i_subscriptionId;
     bytes32 private immutable i_keyHash;
@@ -176,6 +178,7 @@ contract Tamagotchi is
         i_vrfCoordinator = _vrfCoordinator;
         i_keyHash = _keyHash;
         i_callbackGasLimit = _callbackGasLimit;
+        i_owner = msg.sender;
         s_lastTimeStamp = block.timestamp;
         s_tokenCounter = 0;
         s_happyImageUri = _happyImageUri;
@@ -187,6 +190,25 @@ contract Tamagotchi is
         s_lethargicImageUri = _lethargicImageUri;
         s_deadImageUri = _deadImageUri;
         s_lastProcessedTokenId = 0;
+    }
+
+    //Chainlink VRF Request function
+    function requestRandomWords() external {
+        if (msg.sender != i_owner) revert Tamagotchi__NotOwner();
+        uint256 requestId = s_vrfCoordinator.requestRandomWords(
+            VRFV2PlusClient.RandomWordsRequest({
+                keyHash: i_keyHash,
+                subId: i_subscriptionId,
+                requestConfirmations: REQUEST_CONFIRMATIONS,
+                callbackGasLimit: i_callbackGasLimit,
+                numWords: NUM_WORDS,
+                extraArgs: VRFV2PlusClient._argsToBytes(
+                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
+                )
+            })
+        );
+        s_requestIdExists[requestId] = true;
+        emit RequestSent(requestId, NUM_WORDS);
     }
 
     // Mint NFTs (Pets)
@@ -214,24 +236,7 @@ contract Tamagotchi is
         s_tokenIdToPetStats[s_tokenCounter].entertainment = 70;
         s_tokenIdToPetState[s_tokenCounter] = PetState.STINKY;
 
-        //Chainlink VRF
-        uint256 requestId = s_vrfCoordinator.requestRandomWords(
-            VRFV2PlusClient.RandomWordsRequest({
-                keyHash: i_keyHash,
-                subId: i_subscriptionId,
-                requestConfirmations: REQUEST_CONFIRMATIONS,
-                callbackGasLimit: i_callbackGasLimit,
-                numWords: NUM_WORDS,
-                extraArgs: VRFV2PlusClient._argsToBytes(
-                    VRFV2PlusClient.ExtraArgsV1({nativePayment: false})
-                )
-            })
-        );
-        s_requestIdExists[requestId] = true;
-        s_requestIdToTokenId[requestId] = s_tokenCounter;
-
         //events
-        emit RequestSent(requestId, NUM_WORDS);
         emit NftMinted(msg.sender, s_tokenCounter);
 
         s_tokenCounter++;
@@ -419,7 +424,7 @@ contract Tamagotchi is
                 s_tokenIdToPetsAge[i]++;
                 s_tokenIdToPetStage[i] = _chooseStage(
                     s_tokenIdToPetsAge[i],
-                    s_tokenIdToDeathAge[i]
+                    s_deathAge
                 );
                 if (s_tokenIdToPetStage[i] == PetStage.DEAD) {
                     emit PetDied(i, block.timestamp);
@@ -599,10 +604,8 @@ contract Tamagotchi is
         return s_tokenIdToPetTimestamps[tokenId];
     }
 
-    function getTokenIdToDeathAge(
-        uint256 tokenId
-    ) external view returns (uint256) {
-        return s_tokenIdToDeathAge[tokenId];
+    function deathAge() external view returns (uint256) {
+        return s_deathAge;
     }
 
     function getSubscriptionId() external view returns (uint256) {
@@ -706,10 +709,8 @@ contract Tamagotchi is
     ) internal override {
         if (!s_requestIdExists[_requestId])
             revert Tamagotchi__RequestNotFound();
-        uint256 tokenId = s_requestIdToTokenId[_requestId];
-        uint256 deathAge = (_randomWords[0] % 16) + 5;
-        s_tokenIdToDeathAge[tokenId] = deathAge;
-        emit PetDeathAgeAssigned(_requestId, deathAge);
+        s_deathAge = (_randomWords[0] % 16) + 5;
+        emit PetDeathAgeAssigned(_requestId, s_deathAge);
     }
 
     //Helper functions (Internal)
@@ -777,10 +778,10 @@ contract Tamagotchi is
 
     function _chooseStage(
         uint256 age,
-        uint256 deathAge
+        uint256 _deathAge
     ) internal pure returns (PetStage) {
         if (age <= 3) return PetStage.BABY;
-        if (age > 3 && age <= deathAge) return PetStage.ADULT;
+        if (age > 3 && age <= _deathAge) return PetStage.ADULT;
         return PetStage.DEAD;
     }
 
