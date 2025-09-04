@@ -95,6 +95,7 @@ contract Tamagotchi is
     string private s_boredImageUri;
     string private s_stinkyImageUri;
     string private s_lethargicImageUri;
+    string private s_deadImageUri;
 
     mapping(uint256 => uint) s_tokenIdToPetsAge;
     mapping(uint256 => PetStage) s_tokenIdToPetStage;
@@ -156,7 +157,8 @@ contract Tamagotchi is
         string memory _hungryImageUri,
         string memory _boredImageUri,
         string memory _stinkyImageUri,
-        string memory _lethargicImageUri
+        string memory _lethargicImageUri,
+        string memory _deadImageUri
     ) ERC721("Tamagotchi", "TMG") VRFConsumerBaseV2Plus(_vrfCoordinator) {
         i_interval = _interval;
         i_hungerDecayRatePerSecond = _hungerDecayRatePerSecond;
@@ -183,6 +185,7 @@ contract Tamagotchi is
         s_boredImageUri = _boredImageUri;
         s_stinkyImageUri = _stinkyImageUri;
         s_lethargicImageUri = _lethargicImageUri;
+        s_deadImageUri = _deadImageUri;
         s_lastProcessedTokenId = 0;
     }
 
@@ -635,7 +638,9 @@ contract Tamagotchi is
         uint256 tokenId
     ) public view virtual override returns (string memory) {
         string memory imageURI;
-        if (s_tokenIdToPetState[tokenId] == PetState.HAPPY)
+        if (s_tokenIdToPetStage[tokenId] == PetStage.DEAD)
+            imageURI = s_deadImageUri;
+        else if (s_tokenIdToPetState[tokenId] == PetState.HAPPY)
             imageURI = s_happyImageUri;
         else if (s_tokenIdToPetState[tokenId] == PetState.SAD)
             imageURI = s_sadImageUri;
@@ -680,7 +685,11 @@ contract Tamagotchi is
                                 Strings.toString(
                                     s_tokenIdToPetStats[tokenId].energy
                                 ),
-                                '}], "image":"',
+                                '}, {"trait_type":"age","value":',
+                                Strings.toString(s_tokenIdToPetsAge[tokenId]),
+                                '}, {"trait_type":"stage","value":"',
+                                _petStageToString(s_tokenIdToPetStage[tokenId]),
+                                '"}], "image":"',
                                 imageURI,
                                 '"}'
                             )
@@ -783,6 +792,15 @@ contract Tamagotchi is
     function _min(uint256 a, uint256 b) internal pure returns (uint256) {
         if (a <= b) return a;
         else return b;
+    }
+
+    function _petStageToString(
+        PetStage stage
+    ) internal pure returns (string memory) {
+        if (stage == PetStage.BABY) return "Baby";
+        if (stage == PetStage.ADULT) return "Adult";
+        if (stage == PetStage.DEAD) return "Dead";
+        return "";
     }
 
     function _baseURI() internal view virtual override returns (string memory) {
