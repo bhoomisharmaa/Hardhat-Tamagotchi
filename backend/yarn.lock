@@ -814,6 +814,13 @@
   dependencies:
     "@nomicfoundation/hardhat-utils" "^3.0.0"
 
+"@nomicfoundation/hardhat-errors@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-errors/-/hardhat-errors-3.0.1.tgz#1c5b6fc80a06c89a520d6340b4a8158c238625ec"
+  integrity sha512-qXzTDmND5aNSolxms6shuLlPK8+rugKjDsLb1BRVAYnZfPBCIc52v8nX2HEW+/qBRp3YMZVDyJVrhud+Uby2JQ==
+  dependencies:
+    "@nomicfoundation/hardhat-utils" "^3.0.0"
+
 "@nomicfoundation/hardhat-ethers-chai-matchers@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-ethers-chai-matchers/-/hardhat-ethers-chai-matchers-3.0.0.tgz#bf4f660d8e08da6f9cd3ef5d3b27d33251a43072"
@@ -842,6 +849,13 @@
   integrity sha512-IF1eqRADe2lvvxnMNvZDhK8R//6XdyG5wW28qILW776VTCYBFJO2WbhU5XVmQzKyvNJ94Hj40LQsrgHwKOaO8Q==
   dependencies:
     "@nomicfoundation/hardhat-errors" "^3.0.0"
+
+"@nomicfoundation/hardhat-ignition-viem@^3.0.2":
+  version "3.0.2"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-ignition-viem/-/hardhat-ignition-viem-3.0.2.tgz#a6fa388d683d6322d7bd4fb52ce1bad8ac111805"
+  integrity sha512-SbKUzPPIqDIkZyqCIKeEomoRJHmjyJR4QCVGXfQLV2XsPsMnXlT92i/KfQSRB8TrxXoDnobRFynUKRPLgNalUA==
+  dependencies:
+    "@nomicfoundation/hardhat-errors" "^3.0.1"
 
 "@nomicfoundation/hardhat-ignition@^3.0.0":
   version "3.0.0"
