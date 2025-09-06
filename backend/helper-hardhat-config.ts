@@ -1,7 +1,27 @@
 import * as dotenv from "dotenv";
 dotenv.config();
 
-const networkConfig = {
+type NetworkSettings = {
+  name: string;
+  vrfCoordinator?: string;
+  keyHash: string;
+  callbackGasLimit: string;
+  subscriptionId?: string;
+  interval: number;
+  hungerDecayRatePerSecond: bigint;
+  happinessDecayRatePerSecond: bigint;
+  energyDecayRatePerSecond: bigint;
+  funDecayRatePerSecond: bigint;
+  hygieneDecayRatePerSecond: bigint;
+  growthInterval: number;
+  hungerToleranceInterval: number;
+  sadToleranceLevel: number;
+  stinkyToleranceLevel: number;
+  boredToleranceLevel: number;
+  sleepToleranceLevel: number;
+};
+
+export const networkConfig: Record<number, NetworkSettings> = {
   11155111: {
     name: "sepolia",
     vrfCoordinator: "0x9DdfaCa8183c41ad55329BdeeD9F6A8d53168B1B",
@@ -10,11 +30,11 @@ const networkConfig = {
     callbackGasLimit: "500000",
     subscriptionId: process.env.SUBSCRIPTION_ID,
     interval: 7200,
-    hungerDecayRatePerSecond: 578703703703700,
-    happinessDecayRatePerSecond: 385802469135802,
-    energyDecayRatePerSecond: 289351851851851,
-    funDecayRatePerSecond: 231481481481481,
-    hygieneDecayRatePerSecond: 192901234567901,
+    hungerDecayRatePerSecond: 578703703703700n,
+    happinessDecayRatePerSecond: 385802469135802n,
+    energyDecayRatePerSecond: 289351851851851n,
+    funDecayRatePerSecond: 231481481481481n,
+    hygieneDecayRatePerSecond: 192901234567901n,
     growthInterval: 86400,
     hungerToleranceInterval: 57600,
     sadToleranceLevel: 86400,
@@ -27,7 +47,6 @@ const networkConfig = {
     keyHash:
       "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c",
     callbackGasLimit: "500000",
-    subscriptionId: process.env.SUBSCRIPTION_ID,
     interval: 120,
     hungerDecayRatePerSecond: 66666666666666666667n,
     happinessDecayRatePerSecond: 5000000000000000000n,
@@ -43,6 +62,4 @@ const networkConfig = {
   },
 };
 
-const developmentChains = ["localhost", "hardhat"];
-
-module.exports = { networkConfig, developmentChains };
+export const developmentChains = ["localhost", "hardhat"];
