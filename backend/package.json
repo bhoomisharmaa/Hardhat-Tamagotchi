@@ -7,18 +7,17 @@
   "private": true,
   "devDependencies": {
     "@chainlink/contracts": "^1.4.0",
-    "@nomicfoundation/hardhat-ethers": "^4.0.0",
-    "@nomicfoundation/hardhat-ethers-chai-matchers": "^3.0.0",
-    "@nomicfoundation/hardhat-ignition": "^3.0.0",
-    "@nomicfoundation/hardhat-ignition-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
+    "@nomicfoundation/hardhat-ignition": "^3.0.2",
     "@nomicfoundation/hardhat-ignition-viem": "^3.0.2",
     "@nomicfoundation/hardhat-keystore": "^3.0.0",
     "@nomicfoundation/hardhat-mocha": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
-    "@nomicfoundation/hardhat-toolbox-mocha-ethers": "^3.0.0",
+    "@nomicfoundation/hardhat-node-test-runner": "^3.0.2",
     "@nomicfoundation/hardhat-typechain": "^3.0.0",
     "@nomicfoundation/hardhat-verify": "^3.0.0",
-    "@nomicfoundation/ignition-core": "^3.0.0",
+    "@nomicfoundation/hardhat-viem": "^3.0.0",
+    "@nomicfoundation/ignition-core": "^3.0.2",
     "@openzeppelin/contracts": "^5.4.0",
     "@types/chai": "^4.2.0",
     "@types/chai-as-promised": "^8.0.1",
@@ -30,7 +29,8 @@
     "forge-std": "foundry-rs/forge-std#v1.9.4",
     "hardhat": "^3.0.1",
     "mocha": "^11.0.0",
-    "typescript": "~5.8.0"
+    "typescript": "~5.8.0",
+    "viem": "^2.37.3"
   },
   "type": "module"
 }

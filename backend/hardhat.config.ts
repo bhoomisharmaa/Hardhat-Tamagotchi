@@ -1,11 +1,12 @@
 import type { HardhatUserConfig } from "hardhat/config";
 import hardhatVerify from "@nomicfoundation/hardhat-verify";
-import hardhatToolboxMochaEthersPlugin from "@nomicfoundation/hardhat-toolbox-mocha-ethers";
-import hardhatEthers from "@nomicfoundation/hardhat-ethers";
+import hardhatIgnition from "@nomicfoundation/hardhat-ignition-viem";
+import hardhatViem from "@nomicfoundation/hardhat-viem";
+import hardhatNodeTestRunner from "@nomicfoundation/hardhat-node-test-runner";
 import { configVariable } from "hardhat/config";
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatToolboxMochaEthersPlugin, hardhatVerify, hardhatEthers],
+  plugins: [hardhatVerify, hardhatIgnition, hardhatViem, hardhatNodeTestRunner],
   solidity: {
     profiles: {
       default: {
