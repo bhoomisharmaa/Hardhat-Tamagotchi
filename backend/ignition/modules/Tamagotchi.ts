@@ -5,14 +5,13 @@ import {
   developmentChains,
 } from "../../helper-hardhat-config.ts";
 
-const { ethers } = await network.connect();
-const connectedNetwork = await ethers.provider.getNetwork();
+const { viem } = await network.connect();
+const publicClient = await viem.getPublicClient();
+const chainId = await publicClient.getChainId();
 
 export default buildModule("Tamagotchi", (m) => {
   let vrfCoordinator, subscriptionId;
-
-  const chainId = Number(connectedNetwork.chainId);
-  const networkName = connectedNetwork.name;
+  const networkName = publicClient.chain.name.toLowerCase();
 
   // Image URI
   const happyImageUri =
