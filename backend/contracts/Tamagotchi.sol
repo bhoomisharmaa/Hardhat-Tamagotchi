@@ -535,10 +535,10 @@ contract Tamagotchi is
     }
 
     function getBoredToleranceInterval() external view returns (uint256) {
-        return i_stinkyToleranceInterval;
+        return i_boredToleranceInterval;
     }
 
-    function getSeepToleranceInterval() external view returns (uint256) {
+    function getSleepToleranceInterval() external view returns (uint256) {
         return i_sleepToleranceInterval;
     }
 
@@ -622,6 +622,10 @@ contract Tamagotchi is
 
     function getVrfCoordinator() external view returns (address) {
         return i_vrfCoordinator;
+    }
+
+    function getOwner() external view returns (address) {
+        return i_owner;
     }
 
     function getDecayPrecision() external pure returns (uint256) {
