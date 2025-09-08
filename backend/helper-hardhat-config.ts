@@ -19,6 +19,7 @@ type NetworkSettings = {
   stinkyToleranceLevel: number;
   boredToleranceLevel: number;
   sleepToleranceLevel: number;
+  contractAddress: string;
 };
 
 export const networkConfig: Record<number, NetworkSettings> = {
@@ -41,6 +42,7 @@ export const networkConfig: Record<number, NetworkSettings> = {
     stinkyToleranceLevel: 115200,
     boredToleranceLevel: 86400,
     sleepToleranceLevel: 115200,
+    contractAddress: "CAf9E0C2Fb525b3Ec77c59cD5F4343529c6a0404",
   },
   31337: {
     name: "localhost",
@@ -59,6 +61,7 @@ export const networkConfig: Record<number, NetworkSettings> = {
     stinkyToleranceLevel: 240,
     boredToleranceLevel: 180,
     sleepToleranceLevel: 240,
+    contractAddress: "Cf7Ed3AccA5a467e9e704C703E8D87F634fB0Fc9",
   },
 };
 
