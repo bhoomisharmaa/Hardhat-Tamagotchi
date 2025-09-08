@@ -10,7 +10,7 @@ const publicClient = await viem.getPublicClient();
 const chainId = await publicClient.getChainId();
 
 export default buildModule("Tamagotchi", (m) => {
-  let vrfCoordinator, subscriptionId;
+  let vrfCoordinator, vrfCoordinatorContract, subscriptionId;
   const networkName = publicClient.chain.name.toLowerCase();
 
   // Image URI
@@ -50,12 +50,14 @@ export default buildModule("Tamagotchi", (m) => {
       "subId"
     );
 
+    vrfCoordinatorContract = vrfCoordinator;
+
     m.call(vrfCoordinator, "fundSubscription", [subscriptionId, FUND_AMT]);
   } else {
-    const vrfCoordinatorAddress =
+    vrfCoordinator =
       networkConfig[chainId].vrfCoordinator ??
       "0x0000000000000000000000000000000000000000";
-    vrfCoordinator = m.contractAt("VRFCoordinatorV2_5", vrfCoordinatorAddress);
+
     subscriptionId = networkConfig[chainId].subscriptionId;
   }
 
@@ -86,7 +88,11 @@ export default buildModule("Tamagotchi", (m) => {
     deadImageUri,
   ];
   const tamagotchi = m.contract("Tamagotchi", args);
-  m.call(vrfCoordinator, "addConsumer", [subscriptionId!, tamagotchi]);
+  if (developmentChains.includes(networkName))
+    m.call(vrfCoordinatorContract!, "addConsumer", [
+      subscriptionId!,
+      tamagotchi,
+    ]);
   m.call(tamagotchi, "requestRandomWords", []);
   return { tamagotchi };
 });

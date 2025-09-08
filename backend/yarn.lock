@@ -737,11 +737,6 @@
     globby "^11.0.0"
     read-yaml-file "^1.1.0"
 
-"@noble/ciphers@1.2.1":
-  version "1.2.1"
-  resolved "https://registry.yarnpkg.com/@noble/ciphers/-/ciphers-1.2.1.tgz#3812b72c057a28b44ff0ad4aff5ca846e5b9cdc9"
-  integrity sha512-rONPWMC7PeExE077uLE4oqWrZ1IvAfz3oH9LibVAcVCopJiA9R62uavnbEzdkVmJYI6M6Zgkbeb07+tWjlq2XA==
-
 "@noble/ciphers@^1.3.0":
   version "1.3.0"
   resolved "https://registry.yarnpkg.com/@noble/ciphers/-/ciphers-1.3.0.tgz#f64b8ff886c240e644e5573c097f86e5b43676dc"
@@ -791,11 +786,6 @@
   version "1.4.0"
   resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.4.0.tgz#45814aa329f30e4fe0ba49426f49dfccdd066426"
   integrity sha512-V1JJ1WTRUqHHrOSh597hURcMqVKVGL/ea3kv0gSnEdsEZ0/+VyPghM1lMNGc00z7CIQorSvbKpuJkxvuHbvdbg==
-
-"@noble/hashes@1.7.1":
-  version "1.7.1"
-  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.7.1.tgz#5738f6d765710921e7a751e00c20ae091ed8db0f"
-  integrity sha512-B8XBPsn4vT/KJAGqDzbwztd+6Yte3P4V7iafm24bxgDe/mlRuK6xmWPuCNrKt2vDafZ8MfJLlchDG/vYafQEjQ==
 
 "@noble/hashes@1.7.2", "@noble/hashes@~1.7.1":
   version "1.7.2"
@@ -920,20 +910,6 @@
     debug "^4.3.2"
     json5 "^2.2.3"
     prompts "^2.4.2"
-
-"@nomicfoundation/hardhat-keystore@^3.0.0":
-  version "3.0.0"
-  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-keystore/-/hardhat-keystore-3.0.0.tgz#fb7b96115bfbdb27423b18ba0add98da17fd1939"
-  integrity sha512-a6rw/72LBg6PVlk5lVeWCtQsw4LZnNXM7XroIMWv7aN00o/IBgXPRLePaX+zZXvJqWYZrw2XcZMay1eN9m+rRA==
-  dependencies:
-    "@noble/ciphers" "1.2.1"
-    "@noble/hashes" "1.7.1"
-    "@nomicfoundation/hardhat-errors" "^3.0.0"
-    "@nomicfoundation/hardhat-utils" "^3.0.0"
-    "@nomicfoundation/hardhat-zod-utils" "^3.0.0"
-    chalk "^5.3.0"
-    debug "^4.3.2"
-    zod "^3.23.8"
 
 "@nomicfoundation/hardhat-mocha@^3.0.0":
   version "3.0.0"

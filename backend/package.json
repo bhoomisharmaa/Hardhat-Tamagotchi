@@ -10,7 +10,6 @@
     "@nomicfoundation/hardhat-chai-matchers": "^2.1.0",
     "@nomicfoundation/hardhat-ignition": "^3.0.2",
     "@nomicfoundation/hardhat-ignition-viem": "^3.0.2",
-    "@nomicfoundation/hardhat-keystore": "^3.0.0",
     "@nomicfoundation/hardhat-mocha": "^3.0.0",
     "@nomicfoundation/hardhat-network-helpers": "^3.0.0",
     "@nomicfoundation/hardhat-node-test-runner": "^3.0.2",
