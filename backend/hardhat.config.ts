@@ -4,6 +4,13 @@ import hardhatIgnition from "@nomicfoundation/hardhat-ignition-viem";
 import hardhatViem from "@nomicfoundation/hardhat-viem";
 import hardhatNodeTestRunner from "@nomicfoundation/hardhat-node-test-runner";
 import { configVariable } from "hardhat/config";
+import * as dotenv from "dotenv";
+dotenv.config();
+
+const SEPOLIA_RPC_URL = process.env.SEPOLIA_RPC_URL ?? "";
+const PRIVATE_KEY_ACCOUNT_1 = process.env.PRIVATE_KEY_ACCOUNT_1 ?? "";
+const PRIVATE_KEY_ACCOUNT_2 = process.env.PRIVATE_KEY_ACCOUNT_2 ?? "";
+const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY ?? "";
 
 const config: HardhatUserConfig = {
   plugins: [hardhatVerify, hardhatIgnition, hardhatViem, hardhatNodeTestRunner],
@@ -43,17 +50,14 @@ const config: HardhatUserConfig = {
     sepolia: {
       type: "http",
       chainType: "l1",
-      url: configVariable("SEPOLIA_RPC_URL"),
-      accounts: [
-        configVariable("PRIVATE_KEY_ACCOUNT_1"),
-        configVariable("PRIVATE_KEY_ACCOUNT_2"),
-      ],
+      url: SEPOLIA_RPC_URL,
+      accounts: [PRIVATE_KEY_ACCOUNT_1, PRIVATE_KEY_ACCOUNT_2],
     },
   },
 
   verify: {
     etherscan: {
-      apiKey: configVariable("ETHERSCAN_API_KEY"),
+      apiKey: ETHERSCAN_API_KEY,
       enabled: true,
     },
   },
