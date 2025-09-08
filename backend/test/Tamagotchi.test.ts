@@ -1,13 +1,14 @@
 import { network } from "hardhat";
-import { describe, it } from "node:test";
+import { beforeEach, describe, it } from "node:test";
 import { networkConfig, developmentChains } from "../helper-hardhat-config.ts";
 import assert from "node:assert";
 import { expect } from "chai";
 const { viem } = await network.connect();
-import { getAddress } from "viem";
+import { decodeEventLog, getAddress } from "viem";
 const publicClient = await viem.getPublicClient();
 const chainId = await publicClient.getChainId();
 const networkName = publicClient.chain.name.toLowerCase();
+const [deployer, imposter] = await viem.getWalletClients();
 const tamagotchi = await viem.getContractAt(
   "Tamagotchi",
   `0x${networkConfig[chainId].contractAddress}`
@@ -102,9 +103,69 @@ describe("Tamagotchi", function () {
     });
 
     it("assigns the deployer as the initial contract owner", async () => {
-      const [deployer] = await viem.getWalletClients();
       expect(getAddress(await tamagotchi.read.getOwner())).to.equal(
         getAddress(deployer.account.address)
+      );
+    });
+  });
+
+  describe("mintNft", function () {
+    it("should emit Transfer and NftMinted event", async () => {
+      const hash = await tamagotchi.write.mintNft();
+      const receipt = await publicClient.getTransactionReceipt({ hash });
+      const event1 = decodeEventLog({
+        abi: tamagotchi.abi,
+        data: receipt.logs[0].data,
+        topics: receipt.logs[0].topics,
+      });
+      const event2 = decodeEventLog({
+        abi: tamagotchi.abi,
+        data: receipt.logs[1].data,
+        topics: receipt.logs[1].topics,
+      });
+
+      expect(event1.eventName).to.equal("Transfer");
+      expect(event2.eventName).to.equal("NftMinted");
+    });
+
+    it("should mint a new NFT pet to caller", async () => {
+      const owner = await tamagotchi.read.ownerOf([0n]);
+      expect(getAddress(owner)).to.equal(getAddress(deployer.account.address));
+    });
+
+    it("should set all the intervals", async () => {
+      const timestamps = await tamagotchi.read.getTokenIdToPetTimestamps([0n]);
+      expect(Number(timestamps.mintedAt)).to.be.greaterThan(0);
+      expect(Number(timestamps.bathedAt)).to.be.greaterThan(0);
+      expect(Number(timestamps.cuddledAt)).to.be.greaterThan(0);
+      expect(Number(timestamps.fedAt)).to.be.greaterThan(0);
+      expect(Number(timestamps.grewAt)).to.be.greaterThan(0);
+      expect(Number(timestamps.playedAt)).to.be.greaterThan(0);
+      expect(Number(timestamps.sleptAt)).to.be.greaterThan(0);
+    });
+
+    it("should initialize all the stats correctly", async () => {
+      const stats = await tamagotchi.read.getTokenIdToPetStats([0n]);
+      expect(stats.hunger).to.equal(30n);
+      expect(stats.happiness).to.equal(70n);
+      expect(stats.energy).to.equal(70n);
+      expect(stats.cleanliness).to.equal(20n);
+      expect(stats.entertainment).to.equal(70n);
+    });
+
+    it("should increment the token counter", async () => {
+      expect(await tamagotchi.read.getTokenCounter()).to.equal(1n);
+    });
+
+    it("should initialize the pet's stage as BABY, age as 0, and stage as STINKY", async () => {
+      expect(Number(await tamagotchi.read.getTokenIdToPetStage([0n]))).to.equal(
+        0
+      );
+      expect(Number(await tamagotchi.read.getTokenIdToPetsAge([0n]))).to.equal(
+        0
+      );
+      expect(Number(await tamagotchi.read.getTokenIdToPetState([0n]))).to.equal(
+        5
       );
     });
   });
