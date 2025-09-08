@@ -46,6 +46,7 @@ export const networkConfig: Record<number, NetworkSettings> = {
   },
   31337: {
     name: "localhost",
+    vrfCoordinator: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
     keyHash:
       "0x474e34a077df58807dbe9c96d3c009b23b3c6d0cce433e59bbf5b34f823bc56c",
     callbackGasLimit: "500000",
