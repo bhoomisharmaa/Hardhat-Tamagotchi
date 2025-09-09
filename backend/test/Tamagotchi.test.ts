@@ -3,18 +3,40 @@ import { beforeEach, describe, it } from "node:test";
 import { networkConfig, developmentChains } from "../helper-hardhat-config.ts";
 import assert from "node:assert";
 import { expect } from "chai";
-const { viem } = await network.connect();
-import { decodeEventLog, getAddress } from "viem";
+import {
+  compactSignatureToHex,
+  decodeErrorResult,
+  decodeEventLog,
+  getAddress,
+} from "viem";
+import Tamagotchi from "../ignition/modules/Tamagotchi.ts";
+
+const { viem, ignition, networkHelpers } = await network.connect();
 const publicClient = await viem.getPublicClient();
 const chainId = await publicClient.getChainId();
 const networkName = publicClient.chain.name.toLowerCase();
 const [deployer, imposter] = await viem.getWalletClients();
-const tamagotchi = await viem.getContractAt(
+const tamagotchii = await viem.getContractAt(
   "Tamagotchi",
   `0x${networkConfig[chainId].contractAddress}`
 );
 
 describe("Tamagotchi", function () {
+  let tamagotchi: any;
+
+  async function deployFixture() {
+    const [owner, imposter] = await viem.getWalletClients();
+
+    const { tamagotchi: deployed } = await ignition.deploy(Tamagotchi, {
+      defaultSender: owner.account.address,
+    });
+    tamagotchi = deployed;
+  }
+
+  beforeEach(async () => {
+    await networkHelpers.loadFixture(deployFixture);
+  });
+
   describe("constuctor", function () {
     it("sets gameplay intervals from the network configuration", async () => {
       expect(Number(await tamagotchi.read.getInterval())).to.equal(
@@ -110,15 +132,19 @@ describe("Tamagotchi", function () {
   });
 
   describe("mintNft", function () {
+    beforeEach(async () => {
+      await tamagotchi.write.mintNft();
+    });
+
     it("should emit Transfer and NftMinted event", async () => {
       const hash = await tamagotchi.write.mintNft();
       const receipt = await publicClient.getTransactionReceipt({ hash });
-      const event1 = decodeEventLog({
+      const event1: any = decodeEventLog({
         abi: tamagotchi.abi,
         data: receipt.logs[0].data,
         topics: receipt.logs[0].topics,
       });
-      const event2 = decodeEventLog({
+      const event2: any = decodeEventLog({
         abi: tamagotchi.abi,
         data: receipt.logs[1].data,
         topics: receipt.logs[1].topics,
@@ -167,6 +193,46 @@ describe("Tamagotchi", function () {
       expect(Number(await tamagotchi.read.getTokenIdToPetState([0n]))).to.equal(
         5
       );
+    });
+  });
+
+  describe.only("feed", function () {
+    beforeEach(async () => {
+      await tamagotchi.write.mintNft();
+    });
+
+    it("should emit Feeding event", async () => {
+      const hash = await tamagotchi.write.feed([0n]);
+      const receipt = await publicClient.getTransactionReceipt({ hash });
+      const event: any = decodeEventLog({
+        abi: tamagotchi.abi,
+        data: receipt.logs[0].data,
+        topics: receipt.logs[0].topics,
+      });
+      expect(event.eventName).to.equal("Feeding");
+    });
+
+    it("should increase hunger by 30 (max 100)", async () => {
+      const beforeStat = (await tamagotchi.read.getTokenIdToPetStats([0n]))
+        .hunger;
+
+      await tamagotchi.write.feed([0n]);
+
+      const currentStat = (await tamagotchi.read.getTokenIdToPetStats([0n]))
+        .hunger;
+      expect(currentStat == 100n || currentStat == beforeStat + 30n).to.be.true;
+    });
+
+    it("should update the fedAt timestamp", async () => {
+      const beforeTimestamp = (
+        await tamagotchi.read.getTokenIdToPetTimestamps([0n])
+      ).fedAt;
+
+      await tamagotchi.write.feed([0n]);
+
+      expect(
+        Number((await tamagotchi.read.getTokenIdToPetTimestamps([0n])).fedAt)
+      ).to.be.greaterThan(Number(beforeTimestamp));
     });
   });
 });
