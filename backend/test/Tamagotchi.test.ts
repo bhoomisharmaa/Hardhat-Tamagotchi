@@ -16,19 +16,13 @@ const publicClient = await viem.getPublicClient();
 const chainId = await publicClient.getChainId();
 const networkName = publicClient.chain.name.toLowerCase();
 const [deployer, imposter] = await viem.getWalletClients();
-const tamagotchii = await viem.getContractAt(
-  "Tamagotchi",
-  `0x${networkConfig[chainId].contractAddress}`
-);
 
 describe("Tamagotchi", function () {
   let tamagotchi: any;
 
   async function deployFixture() {
-    const [owner, imposter] = await viem.getWalletClients();
-
     const { tamagotchi: deployed } = await ignition.deploy(Tamagotchi, {
-      defaultSender: owner.account.address,
+      defaultSender: deployer.account.address,
     });
     tamagotchi = deployed;
   }
@@ -196,7 +190,7 @@ describe("Tamagotchi", function () {
     });
   });
 
-  describe.only("feed", function () {
+  describe("feed", function () {
     beforeEach(async () => {
       await tamagotchi.write.mintNft();
     });
@@ -232,6 +226,45 @@ describe("Tamagotchi", function () {
 
       expect(
         Number((await tamagotchi.read.getTokenIdToPetTimestamps([0n])).fedAt)
+      ).to.be.greaterThan(Number(beforeTimestamp));
+    });
+  });
+
+  describe.only("play", function () {
+    beforeEach(async () => {
+      await tamagotchi.write.mintNft();
+    });
+
+    it("should emit Playing event", async () => {
+      const hash = await tamagotchi.write.play([0n]);
+      const receipt = await publicClient.getTransactionReceipt({ hash });
+      const event: any = decodeEventLog({
+        abi: tamagotchi.abi,
+        data: receipt.logs[0].data,
+        topics: receipt.logs[0].topics,
+      });
+      expect(event.eventName).to.equal("Playing");
+    });
+
+    it("should increase fun by 30 (max 100)", async () => {
+      const beforeStat = (await tamagotchi.read.getTokenIdToPetStats([0n])).fun;
+
+      await tamagotchi.write.play([0n]);
+
+      const currentStat = (await tamagotchi.read.getTokenIdToPetStats([0n]))
+        .fun;
+      expect(currentStat == 100n || currentStat == beforeStat + 30n).to.be.true;
+    });
+
+    it("should update the playedAt timestamp", async () => {
+      const beforeTimestamp = (
+        await tamagotchi.read.getTokenIdToPetTimestamps([0n])
+      ).playedAt;
+
+      await tamagotchi.write.play([0n]);
+
+      expect(
+        Number((await tamagotchi.read.getTokenIdToPetTimestamps([0n])).playedAt)
       ).to.be.greaterThan(Number(beforeTimestamp));
     });
   });
