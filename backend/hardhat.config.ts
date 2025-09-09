@@ -3,6 +3,8 @@ import hardhatVerify from "@nomicfoundation/hardhat-verify";
 import hardhatIgnition from "@nomicfoundation/hardhat-ignition-viem";
 import hardhatViem from "@nomicfoundation/hardhat-viem";
 import hardhatNodeTestRunner from "@nomicfoundation/hardhat-node-test-runner";
+import hardhatNetworkHelpers from "@nomicfoundation/hardhat-network-helpers";
+import hardhatViemAssertions from "@nomicfoundation/hardhat-viem-assertions";
 import { configVariable } from "hardhat/config";
 import * as dotenv from "dotenv";
 dotenv.config();
@@ -13,7 +15,14 @@ const PRIVATE_KEY_ACCOUNT_2 = process.env.PRIVATE_KEY_ACCOUNT_2 ?? "";
 const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY ?? "";
 
 const config: HardhatUserConfig = {
-  plugins: [hardhatVerify, hardhatIgnition, hardhatViem, hardhatNodeTestRunner],
+  plugins: [
+    hardhatVerify,
+    hardhatIgnition,
+    hardhatViem,
+    hardhatNodeTestRunner,
+    hardhatNetworkHelpers,
+    hardhatViemAssertions,
+  ],
   solidity: {
     profiles: {
       default: {

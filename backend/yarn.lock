@@ -995,6 +995,14 @@
     semver "^7.6.3"
     zod "^3.23.8"
 
+"@nomicfoundation/hardhat-viem-assertions@^3.0.1":
+  version "3.0.1"
+  resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-viem-assertions/-/hardhat-viem-assertions-3.0.1.tgz#b2cf2614770cf845c6415af15c9e2cab82f39359"
+  integrity sha512-WkMngGc585JVujTfFvCp9Z+BGB2HlgZKNfGDDHAffTs7uZvW8IXsT8PtoKLsggbdNUFbLhaJEP833UAVbruZVg==
+  dependencies:
+    "@nomicfoundation/hardhat-errors" "^3.0.0"
+    "@nomicfoundation/hardhat-utils" "^3.0.0"
+
 "@nomicfoundation/hardhat-viem@^3.0.0":
   version "3.0.0"
   resolved "https://registry.yarnpkg.com/@nomicfoundation/hardhat-viem/-/hardhat-viem-3.0.0.tgz#1d1142b07c7dac5d0f403325bf589544130ed2e9"
