@@ -1,6 +1,15 @@
-@import url('https://fonts.googleapis.com/css2?family=Tiny5&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Tiny5&display=swap");
 @import "tailwindcss";
 
-@theme{
-    --font-tiny5:"Tiny5", sans-serif;
+@theme {
+  --font-tiny5: "Tiny5", sans-serif;
+  --color-alice-blue: #eef5ff;
+  --color-boy-blue: #c9d9f1;
+  --color-blue-grey: #0000000c;
+}
+
+ul {
+  list-style-type: square;
+  margin-left: 0;
+  margin-right: 0;
 }
