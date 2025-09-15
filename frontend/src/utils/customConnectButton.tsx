@@ -32,7 +32,7 @@ export const CustomConnectButton = () => {
               if (!connected) {
                 return (
                   <button
-                    className="text-xl border-2 px-4 py-2 rounded-xl"
+                    className="sm:text-xl text-base border-2 px-4 py-2 rounded-xl"
                     onClick={openConnectModal}
                     type="button"
                   >

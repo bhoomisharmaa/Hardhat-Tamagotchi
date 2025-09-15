@@ -3,9 +3,8 @@ export default function HeartSvg() {
     <svg
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 16 16"
-      width="32"
-      height="32"
       shapeRendering="crispEdges"
+      className="sm:w-8 sm:h-8 w-6 h-6"
     >
       <rect x="4" y="3" width="2" height="1" fill="black" />
       <rect x="9" y="3" width="2" height="1" fill="black" />

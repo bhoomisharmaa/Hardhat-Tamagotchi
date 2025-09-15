@@ -12,22 +12,24 @@ export default function HomePage() {
           <CustomConnectButton />
         </div>
         <div className="flex flex-col items-center">
-          <p className="text-9xl">TAMAGOTCHI</p>
+          <p className="md:text-9xl sm:text-8xl xs:text-7xl xxs:text-6xl text-5xl">
+            TAMAGOTCHI
+          </p>
           <div className="flex items-center gap-2">
             <HeartSvg />
-            <p className="text-4xl">ON CHAIN</p>
+            <p className="sm:text-4xl xs:text-3xl text-xl">ON CHAIN</p>
             <HeartSvg />
           </div>
           <div className="h-max w-max absolute bottom-0 right-0 m-4 flex items-center gap-2">
             <button
               onClick={() => setShowHowToPlay(true)}
-              className="text-2xl border-2 px-4 py-1.5 rounded-xl"
+              className="sm:text-2xl border-2 px-4 py-1.5 rounded-xl"
             >
               START PLAYING
             </button>
             <button
               onClick={() => setShowHowToPlay(true)}
-              className="text-3xl border-2 px-3 py-1 rounded-xl"
+              className="sm:text-3xl text-xl border-2 px-3 py-1 rounded-xl"
             >
               ?
             </button>
