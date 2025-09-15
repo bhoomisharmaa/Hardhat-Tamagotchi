@@ -69,17 +69,19 @@ export default function NamePage({
                   account.address?.slice(38)}
               </p>
             </div>
-            <p className="md:text-2xl sm:text-xl xs:text-md text-[10px]">
+            <p className="md:text-2xl sm:text-xl xs:text-base text-[10px]">
               Create your tamagotchi
             </p>
-            <p className="md:text-md sm:text-sm xs:text-xs text-[8px]">Name</p>
+            <p className="md:text-base sm:text-sm xs:text-xs text-[8px]">
+              Name
+            </p>
             <form
               onSubmit={handleAdoption}
               className="w-full flex flex-col items-center"
             >
               <input
                 name="name"
-                className="w-full bg-white sm:py-3 sm:px-4 sm:text-md text-[10px] px-2 py-1 rounded-lg"
+                className="w-full bg-white sm:py-3 sm:px-4 sm:text-base text-[10px] px-2 py-1 rounded-lg"
                 placeholder="Enter a name"
                 required
               />
