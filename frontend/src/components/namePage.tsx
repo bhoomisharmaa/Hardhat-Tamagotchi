@@ -57,11 +57,11 @@ export default function NamePage({
 
   return (
     <div className="h-screen w-screen bg-(--color-alice-blue) flex items-center justify-center font-tiny5">
-      <div className="flex flex-col items-start sm:gap-2 gap-1">
+      <div className="flex flex-col items-start sm:gap-8 gap-1">
         <p className="md:text-7xl sm:text-5xl text-3xl">TAMAGOTCHI</p>
-        <div className="h-max w-max sm:px-7 sm:py-6 px-4 py-5 sm:border-3 border-2">
-          <div className="h-max w-max sm:border-3 border-2 border-dashed sm:px-6 sm:py-4 px-3 py-2 flex flex-col sm:gap-2 gap-1 items-center font-pressStart">
-            <div className="h-max w-full flex items-center justify-between mb-4 md:text-sm sm:text-xs xs:text-[10px] text-[7px]">
+        <div className="h-max w-max md:p-6 sm:p-4 p-3 sm:border-3 border-2">
+          <div className="h-max w-max sm:border-3 border-2 border-dashed md:px-10 md:py-7 px-6 py-4 flex flex-col sm:gap-6 gap-1 items-center font-pressStart">
+            <div className="h-max w-full flex items-center justify-between mb md:text-sm xs:text-[8px] text-[6px]">
               <p>{`Game balance: ${balance}`}</p>
               <p>
                 {account.address?.slice(0, 6) +
@@ -69,12 +69,10 @@ export default function NamePage({
                   account.address?.slice(38)}
               </p>
             </div>
-            <p className="md:text-2xl sm:text-xl xs:text-base text-[10px]">
-              Create your tamagotchi
+            <p className="md:text-2xl sm:text-xl xs:text-base xxs:text-[12px] text-[10px]">
+              Adopt your tamagotchi
             </p>
-            <p className="md:text-base sm:text-sm xs:text-xs text-[8px]">
-              Name
-            </p>
+
             <form
               onSubmit={handleAdoption}
               className="w-full flex flex-col items-center"
