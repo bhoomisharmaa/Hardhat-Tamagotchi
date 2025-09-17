@@ -13,6 +13,7 @@ interface NamePageProps {
   address?: Address;
   config: any;
   setIsLoading: (loading: boolean) => void;
+  chainId: 11155111 | 31337;
 }
 
 export default function NamePage({
@@ -20,11 +21,12 @@ export default function NamePage({
   address,
   config,
   setIsLoading,
+  chainId,
 }: NamePageProps) {
   const [balance, setBalance] = useState("0");
 
   const account = useAccount();
-  const { data } = useBalance({ address: account.address, chainId: 11155111 });
+  const { data } = useBalance({ address: account.address, chainId });
   const { writeContractAsync } = useWriteContract();
 
   const handleAdoption = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -41,6 +43,7 @@ export default function NamePage({
       setIsLoading(true);
       const receipt = await waitForTransactionReceipt(config, { hash: txn });
       console.log("Receipt:", receipt);
+      setIsLoading(false);
     } catch (error) {
       console.log(error);
     } finally {
@@ -52,7 +55,8 @@ export default function NamePage({
     const value = Number(data?.value);
     const decimal = Math.pow(10, Number(data?.decimals));
     const tempBalance = value / decimal;
-    setBalance(tempBalance.toFixed(2));
+    if (tempBalance >= 1) setBalance(Number(tempBalance.toFixed(2)).toString());
+    else setBalance(tempBalance.toFixed(2));
   }, [data, account]);
 
   return (
