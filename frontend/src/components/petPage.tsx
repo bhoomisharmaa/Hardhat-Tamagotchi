@@ -74,6 +74,8 @@ export default function PetPage({
       console.log("Receipt:", receipt);
     } catch (error) {
       console.log(error);
+    } finally {
+      setIsLoading(false);
     }
   };
 

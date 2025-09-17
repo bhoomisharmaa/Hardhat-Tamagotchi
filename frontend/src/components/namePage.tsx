@@ -43,7 +43,6 @@ export default function NamePage({
       setIsLoading(true);
       const receipt = await waitForTransactionReceipt(config, { hash: txn });
       console.log("Receipt:", receipt);
-      setIsLoading(false);
     } catch (error) {
       console.log(error);
     } finally {
