@@ -1084,6 +1084,19 @@
   },
   {
     "inputs": [],
+    "name": "getOwnerToTokenId",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "view",
+    "type": "function"
+  },
+  {
+    "inputs": [],
     "name": "getRequestConfirmations",
     "outputs": [
       {
