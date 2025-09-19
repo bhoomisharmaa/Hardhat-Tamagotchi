@@ -13,6 +13,7 @@ import { wagmiContractConfig } from "./utils/contractConfig";
 import NamePage from "./components/namePage";
 import HomePage from "./components/homePage";
 import PetPage from "./components/petPage";
+import LoadingPage from "./components/loadingPage";
 
 type ContractConfig = {
   address: Address;
@@ -130,6 +131,7 @@ function App() {
     enabled: true,
     onBlockNumber: async (blockNumber) => {
       refetchData();
+      setIsLoading(false);
     },
     onError(error) {
       console.error("Block error", error);
@@ -146,6 +148,7 @@ function App() {
             <NamePage
               contractConfig={contractConfig}
               address={address}
+              isLoading={isLoading}
               setIsLoading={setIsLoading}
               config={config}
               chainId={chainId}
@@ -158,6 +161,7 @@ function App() {
             <PetPage
               contractConfig={contractConfig}
               address={address}
+              isLoading={isLoading}
               setIsLoading={setIsLoading}
               config={config}
               chainId={chainId}
