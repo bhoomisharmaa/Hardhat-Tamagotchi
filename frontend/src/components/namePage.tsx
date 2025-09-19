@@ -17,6 +17,7 @@ interface NamePageProps {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   chainId: 11155111 | 31337;
+  petName: string;
 }
 
 export default function NamePage({
@@ -26,13 +27,21 @@ export default function NamePage({
   isLoading,
   setIsLoading,
   chainId,
+  petName,
 }: NamePageProps) {
   const [balance, setBalance] = useState("0");
+  const [index, setIndex] = useState(0);
 
   const account = useAccount();
   const navigate = useNavigate();
   const { data } = useBalance({ address: account.address, chainId });
   const { writeContractAsync } = useWriteContract();
+
+  const alreadyMinted = [
+    "Trying to replace your pet already? Rude",
+    "One pet is enough. You can’t even handle yourself.",
+    "Your pet already exists and it’s probably starving. Go feed it.",
+  ];
 
   const handleAdoption = async (e: React.FormEvent<HTMLFormElement>) => {
     try {
@@ -56,6 +65,9 @@ export default function NamePage({
 
   useEffect(() => {
     setIsLoading(false);
+    if (petName) {
+      setIndex(Math.random() * 3);
+    }
   }, []);
 
   useEffect(() => {
@@ -70,6 +82,10 @@ export default function NamePage({
     <div className="h-screen w-screen bg-(--color-alice-blue) flex items-center justify-center font-tiny5">
       {isLoading ? (
         <LoadingPage />
+      ) : petName ? (
+        <p className="md:text-3xl sm:text-2xl text-xl">
+          {alreadyMinted[index]}
+        </p>
       ) : (
         <div className="flex flex-col items-start sm:gap-8 gap-1">
           <p className="md:text-7xl sm:text-5xl text-3xl">TAMAGOTCHI</p>

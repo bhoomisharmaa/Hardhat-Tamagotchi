@@ -157,6 +157,7 @@ function App() {
               setIsLoading={setIsLoading}
               config={config}
               chainId={chainId}
+              petName={petName as string}
             />
           }
         />
