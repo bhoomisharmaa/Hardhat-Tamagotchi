@@ -1,6 +1,5 @@
 import HeartSvg from "../utils/heartSvg";
 import { CustomConnectButton } from "../utils/customConnectButton";
-import HowToPlayAndGameFeatures from "../utils/howToPlay";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAccount } from "wagmi";
@@ -47,18 +46,13 @@ export default function HomePage({
               <CustomConnectButton text="START PLAYING" />
             )}
             <button
-              onClick={() => setShowHowToPlay(true)}
+              onClick={() => navigate("/instructions")}
               className="sm:text-3xl text-xl border-2 px-3 py-1 rounded-xl"
             >
               ?
             </button>
           </div>
         </div>
-        {showHowToPlay ? (
-          <HowToPlayAndGameFeatures setShowHowToPlay={setShowHowToPlay} />
-        ) : (
-          ""
-        )}
       </div>
     </div>
   );

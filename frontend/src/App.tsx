@@ -13,6 +13,7 @@ import { wagmiContractConfig } from "./utils/contractConfig";
 import NamePage from "./components/namePage";
 import HomePage from "./components/homePage";
 import PetPage from "./components/petPage";
+import InstructionPage from "./components/instructionPage";
 
 type ContractConfig = {
   address: Address;
@@ -183,6 +184,7 @@ function App() {
             />
           }
         />
+        <Route path="/instructions" element={<InstructionPage />} />
       </Routes>
     </BrowserRouter>
   );

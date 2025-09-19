@@ -1,20 +1,8 @@
-import HeartSvg from "./heartSvg";
-
-export default function HowToPlayAndGameFeatures({
-  setShowHowToPlay,
-}: {
-  setShowHowToPlay: Function;
-}) {
+export default function InstructionPage() {
   return (
-    <div
-      onClick={() => setShowHowToPlay(false)}
-      className="z-10 absolute left-0 top-0 h-full w-full flex items-center justify-center bg-(--color-blue-grey)"
-    >
-      <div className="h-max w-max flex flex-col items-start bg-(--color-alice-blue) border-1 rounded-xl overflow-hidden">
-        <div className="h-max w-full bg-(--color-boy-blue) border-b-1 p-1">
-          <HeartSvg />
-        </div>
-        <div className="h-max w-max px-6 py-3 mx-3 flex flex-col gap-4">
+    <div className="h-screen w-screen bg-alice-blue flex items-center justify-center font-tiny5">
+      <div className="h-max w-max max-w-[90%] md:p-6 sm:p-4 p-3 sm:border-3 border-2">
+        <div className="h-max w-max max-w-full sm:border-3 border-2 border-dashed md:px-10 md:py-7 sm:px-6 sm:py-4 px-3 py-2 flex flex-col sm:gap-6 gap-4 items-start">
           <GameFeatures />
           <HowToPlay />
         </div>
@@ -26,8 +14,10 @@ export default function HowToPlayAndGameFeatures({
 function GameFeatures() {
   return (
     <div className="flex flex-col items-start gap-1">
-      <p className="text-3xl">GAME FEATURES</p>
-      <ul className="list-inside text-2xl">
+      <p className="lg:text-3xl md:text-2xl sm:text-xl xs:text-lg">
+        GAME FEATURES
+      </p>
+      <ul className="list-inside lg:text-2xl md:text-xl sm:text-lg xs:text-sm text-xs">
         <li>Unique on-chain NFT pet</li>
         <li>Grows through life stages</li>
         <li>Dynamic stats like hunger, happiness, energy, and cleanliness</li>
@@ -40,8 +30,10 @@ function GameFeatures() {
 function HowToPlay() {
   return (
     <div className="flex flex-col items-start gap-1">
-      <p className="text-3xl">HOW TO PLAY</p>
-      <ul className="list-inside text-2xl">
+      <p className="lg:text-3xl md:text-2xl sm:text-xl xs:text-lg">
+        HOW TO PLAY
+      </p>
+      <ul className="list-inside lg:text-2xl md:text-xl sm:text-lg xs:text-sm text-xs">
         <li>Give your pet a cute name</li>
         <li>Watch its stats and keep it healthy</li>
         <li>Feed, play, cuddle, bathe and put it to sleep when needed</li>
