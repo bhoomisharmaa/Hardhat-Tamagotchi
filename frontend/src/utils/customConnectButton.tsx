@@ -1,5 +1,5 @@
 import { ConnectButton } from "@rainbow-me/rainbowkit";
-export const CustomConnectButton = () => {
+export const CustomConnectButton = ({ text }: { text: string }) => {
   return (
     <ConnectButton.Custom>
       {({
@@ -36,7 +36,7 @@ export const CustomConnectButton = () => {
                     onClick={openConnectModal}
                     type="button"
                   >
-                    CONNECT WALLET
+                    {text}
                   </button>
                 );
               }

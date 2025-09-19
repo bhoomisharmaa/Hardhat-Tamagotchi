@@ -3,6 +3,7 @@ import { useAccount, useBalance, useWriteContract } from "wagmi";
 import type { Abi, Address } from "viem";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import LoadingPage from "./loadingPage";
+import { useNavigate } from "react-router-dom";
 
 type ContractConfig = {
   address: Address;
@@ -29,6 +30,7 @@ export default function NamePage({
   const [balance, setBalance] = useState("0");
 
   const account = useAccount();
+  const navigate = useNavigate();
   const { data } = useBalance({ address: account.address, chainId });
   const { writeContractAsync } = useWriteContract();
 
@@ -44,12 +46,17 @@ export default function NamePage({
         account: address!,
       });
       setIsLoading(true);
-      const receipt = await waitForTransactionReceipt(config, { hash: txn });
+      await waitForTransactionReceipt(config, { hash: txn });
+      navigate("/pet");
     } catch (error) {
       console.log(error);
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
 
   useEffect(() => {
     const value = Number(data?.value);

@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Address, Abi } from "viem";
 import { waitForTransactionReceipt } from "wagmi/actions";
-import { useAccount, useBalance, useWriteContract } from "wagmi";
+import { useAccount, useWriteContract } from "wagmi";
 import LoadingPage from "./loadingPage";
 
 type ContractConfig = {
@@ -79,6 +79,10 @@ export default function PetPage({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
 
   return (
     <div className="h-screen w-screen bg-alice-blue flex items-center justify-center font-tiny5">

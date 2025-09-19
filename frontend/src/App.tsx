@@ -13,7 +13,6 @@ import { wagmiContractConfig } from "./utils/contractConfig";
 import NamePage from "./components/namePage";
 import HomePage from "./components/homePage";
 import PetPage from "./components/petPage";
-import LoadingPage from "./components/loadingPage";
 
 type ContractConfig = {
   address: Address;
@@ -141,7 +140,12 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<HomePage />} />
+        <Route
+          path="/"
+          element={
+            <HomePage petName={petName as string} setIsLoading={setIsLoading} />
+          }
+        />
         <Route
           path="/name"
           element={
