@@ -64,10 +64,10 @@ export default function NamePage({
   };
 
   useEffect(() => {
-    setIsLoading(false);
     if (petName) {
-      setIndex(Math.random() * 3);
+      setIndex(Math.floor(Math.random() * 3));
     }
+    setIsLoading(false);
   }, []);
 
   useEffect(() => {
