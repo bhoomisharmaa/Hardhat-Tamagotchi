@@ -46,7 +46,10 @@ export default function HomePage({
               <CustomConnectButton text="START PLAYING" />
             )}
             <button
-              onClick={() => navigate("/instructions")}
+              onClick={() => {
+                setIsLoading(true);
+                navigate("/instructions");
+              }}
               className="sm:text-3xl text-xl border-2 px-3 py-1 rounded-xl"
             >
               ?

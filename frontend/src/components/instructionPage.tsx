@@ -1,4 +1,13 @@
-export default function InstructionPage() {
+import { useEffect } from "react";
+
+export default function InstructionPage({
+  setIsLoading,
+}: {
+  setIsLoading: (loading: boolean) => void;
+}) {
+  useEffect(() => {
+    setIsLoading(false);
+  }, []);
   return (
     <div className="h-screen w-screen bg-alice-blue flex items-center justify-center font-tiny5">
       <div className="h-max w-max max-w-[90%] md:p-6 sm:p-4 p-3 sm:border-3 border-2">

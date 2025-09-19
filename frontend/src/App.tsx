@@ -184,7 +184,10 @@ function App() {
             />
           }
         />
-        <Route path="/instructions" element={<InstructionPage />} />
+        <Route
+          path="/instructions"
+          element={<InstructionPage setIsLoading={setIsLoading} />}
+        />
       </Routes>
     </BrowserRouter>
   );
