@@ -34,9 +34,10 @@ contract Tamagotchi is
     // enums
     enum PetStage {
         BABY,
-        ADULT,
-        DEAD
+        TEEN,
+        ADULT
     }
+
     enum PetState {
         HAPPY,
         SAD,
@@ -44,7 +45,8 @@ contract Tamagotchi is
         HUNGRY,
         BORED,
         STINKY,
-        LETHARGIC
+        LETHARGIC,
+        DEAD
     }
 
     // events
@@ -70,6 +72,7 @@ contract Tamagotchi is
     error Tamagotchi__AlreadyHappy();
     error Tamagotchi__AlreadyClean();
     error Tamagotchi__AlreadyEnergized();
+    error Tamagotchi__NameIsRequired();
 
     // Variables
     uint256 private constant DECAY_PRECISION = 1e18;
@@ -90,16 +93,18 @@ contract Tamagotchi is
     uint256 private s_tokenCounter;
     uint256 private s_deathAge;
 
-    string private s_happyImageUri;
-    string private s_sadImageUri;
-    string private s_neutralImageUri;
-    string private s_hungryImageUri;
-    string private s_boredImageUri;
-    string private s_stinkyImageUri;
-    string private s_lethargicImageUri;
-    string private s_deadImageUri;
+    string[3] private s_happyImageUri;
+    string[3] private s_sadImageUri;
+    string[3] private s_neutralImageUri;
+    string[3] private s_hungryImageUri;
+    string[3] private s_boredImageUri;
+    string[3] private s_stinkyImageUri;
+    string[3] private s_lethargicImageUri;
+    string[3] private s_deadImageUri;
 
+    mapping(address => uint256) s_ownerToTokenId;
     mapping(uint256 => uint) s_tokenIdToPetsAge;
+    mapping(uint256 => string) s_tokenIdToPetsName;
     mapping(uint256 => PetStage) s_tokenIdToPetStage;
     mapping(uint256 => PetState) s_tokenIdToPetState;
     mapping(uint256 => PetStats) s_tokenIdToPetStats;
@@ -130,7 +135,7 @@ contract Tamagotchi is
     }
 
     modifier isAlive(uint256 tokenId) {
-        if (s_tokenIdToPetStage[tokenId] == PetStage.DEAD)
+        if (s_tokenIdToPetState[tokenId] == PetState.DEAD)
             revert Tamagotchi__PetIsDead();
         _;
     }
@@ -153,14 +158,14 @@ contract Tamagotchi is
         address _vrfCoordinator,
         bytes32 _keyHash,
         uint32 _callbackGasLimit,
-        string memory _happyImageUri,
-        string memory _sadImageUri,
-        string memory _neutralImageUri,
-        string memory _hungryImageUri,
-        string memory _boredImageUri,
-        string memory _stinkyImageUri,
-        string memory _lethargicImageUri,
-        string memory _deadImageUri
+        string[3] memory _happyImageUri,
+        string[3] memory _sadImageUri,
+        string[3] memory _neutralImageUri,
+        string[3] memory _hungryImageUri,
+        string[3] memory _boredImageUri,
+        string[3] memory _stinkyImageUri,
+        string[3] memory _lethargicImageUri,
+        string[3] memory _deadImageUri
     ) ERC721("Tamagotchi", "TMG") VRFConsumerBaseV2Plus(_vrfCoordinator) {
         i_interval = _interval;
         i_hungerDecayRatePerSecond = _hungerDecayRatePerSecond;
@@ -212,10 +217,13 @@ contract Tamagotchi is
     }
 
     // Mint NFTs (Pets)
-    function mintNft() external {
+    function mintNft(string memory name) external {
+        if (bytes(name).length == 0) revert Tamagotchi__NameIsRequired();
         _safeMint(msg.sender, s_tokenCounter);
         s_tokenIdToPetStage[s_tokenCounter] = PetStage.BABY;
         s_tokenIdToPetsAge[s_tokenCounter] = 0;
+        s_tokenIdToPetsName[s_tokenCounter] = name;
+        s_ownerToTokenId[msg.sender] = s_tokenCounter;
 
         uint256 _lastTimestamp = block.timestamp;
 
@@ -369,7 +377,7 @@ contract Tamagotchi is
             i < _min(s_tokenCounter, s_lastProcessedTokenId + 10);
             i++
         ) {
-            if (s_tokenIdToPetStage[i] == PetStage.DEAD) continue;
+            if (s_tokenIdToPetState[i] == PetState.DEAD) continue;
             uint256 _lastTimestamp = block.timestamp;
 
             // HUNGER
@@ -422,11 +430,8 @@ contract Tamagotchi is
             ) {
                 s_tokenIdToPetTimestamps[i].grewAt = block.timestamp;
                 s_tokenIdToPetsAge[i]++;
-                s_tokenIdToPetStage[i] = _chooseStage(
-                    s_tokenIdToPetsAge[i],
-                    s_deathAge
-                );
-                if (s_tokenIdToPetStage[i] == PetStage.DEAD) {
+                s_tokenIdToPetStage[i] = _chooseStage(s_tokenIdToPetsAge[i]);
+                if (s_tokenIdToPetState[i] == PetState.DEAD) {
                     emit PetDied(i, block.timestamp);
                     continue;
                 }
@@ -435,7 +440,7 @@ contract Tamagotchi is
             // Handle death due to ignorance
             uint256 timestamp = block.timestamp;
             if (
-                _applyDeathStage(
+                _applyDeathState(
                     i,
                     timestamp,
                     i_hungerToleranceInterval,
@@ -444,7 +449,7 @@ contract Tamagotchi is
                 )
             ) continue;
             if (
-                _applyDeathStage(
+                _applyDeathState(
                     i,
                     timestamp,
                     i_sadToleranceInterval,
@@ -453,7 +458,7 @@ contract Tamagotchi is
                 )
             ) continue;
             if (
-                _applyDeathStage(
+                _applyDeathState(
                     i,
                     timestamp,
                     i_boredToleranceInterval,
@@ -462,7 +467,7 @@ contract Tamagotchi is
                 )
             ) continue;
             if (
-                _applyDeathStage(
+                _applyDeathState(
                     i,
                     timestamp,
                     i_stinkyToleranceInterval,
@@ -471,7 +476,7 @@ contract Tamagotchi is
                 )
             ) continue;
             if (
-                _applyDeathStage(
+                _applyDeathState(
                     i,
                     timestamp,
                     i_sleepToleranceInterval,
@@ -546,32 +551,36 @@ contract Tamagotchi is
         return s_lastProcessedTokenId;
     }
 
-    function getHappyImageUri() external view returns (string memory) {
+    function getHappyImageUri() external view returns (string[3] memory) {
         return s_happyImageUri;
     }
 
-    function getSadImageUri() external view returns (string memory) {
+    function getSadImageUri() external view returns (string[3] memory) {
         return s_sadImageUri;
     }
 
-    function getNeutralImageUri() external view returns (string memory) {
+    function getNeutralImageUri() external view returns (string[3] memory) {
         return s_neutralImageUri;
     }
 
-    function getHungryImageUri() external view returns (string memory) {
+    function getHungryImageUri() external view returns (string[3] memory) {
         return s_hungryImageUri;
     }
 
-    function getBoredImageUri() external view returns (string memory) {
+    function getBoredImageUri() external view returns (string[3] memory) {
         return s_boredImageUri;
     }
 
-    function getStinkyImageUri() external view returns (string memory) {
+    function getStinkyImageUri() external view returns (string[3] memory) {
         return s_stinkyImageUri;
     }
 
-    function getLethargicImageUri() external view returns (string memory) {
+    function getLethargicImageUri() external view returns (string[3] memory) {
         return s_lethargicImageUri;
+    }
+
+    function getDeadImageUri() external view returns (string[3] memory) {
+        return s_deadImageUri;
     }
 
     function getTokenIdToPetsAge(
@@ -602,6 +611,16 @@ contract Tamagotchi is
         uint256 tokenId
     ) external view returns (PetTimestamps memory) {
         return s_tokenIdToPetTimestamps[tokenId];
+    }
+
+    function getTokenIdToPetsName(
+        uint256 tokenId
+    ) public view returns (string memory) {
+        return s_tokenIdToPetsName[tokenId];
+    }
+
+    function getOwnerToTokenId() public view returns (uint256) {
+        return s_ownerToTokenId[msg.sender];
     }
 
     function deathAge() external view returns (uint256) {
@@ -645,22 +664,23 @@ contract Tamagotchi is
         uint256 tokenId
     ) public view virtual override returns (string memory) {
         string memory imageURI;
-        if (s_tokenIdToPetStage[tokenId] == PetStage.DEAD)
-            imageURI = s_deadImageUri;
+        uint8 petStage = uint8(s_tokenIdToPetStage[tokenId]);
+        if (s_tokenIdToPetState[tokenId] == PetState.DEAD)
+            imageURI = s_deadImageUri[petStage];
         else if (s_tokenIdToPetState[tokenId] == PetState.HAPPY)
-            imageURI = s_happyImageUri;
+            imageURI = s_happyImageUri[petStage];
         else if (s_tokenIdToPetState[tokenId] == PetState.SAD)
-            imageURI = s_sadImageUri;
+            imageURI = s_sadImageUri[petStage];
         else if (s_tokenIdToPetState[tokenId] == PetState.NEUTRAL)
-            imageURI = s_neutralImageUri;
+            imageURI = s_neutralImageUri[petStage];
         else if (s_tokenIdToPetState[tokenId] == PetState.HUNGRY)
-            imageURI = s_hungryImageUri;
+            imageURI = s_hungryImageUri[petStage];
         else if (s_tokenIdToPetState[tokenId] == PetState.BORED)
-            imageURI = s_boredImageUri;
+            imageURI = s_boredImageUri[petStage];
         else if (s_tokenIdToPetState[tokenId] == PetState.STINKY)
-            imageURI = s_stinkyImageUri;
+            imageURI = s_stinkyImageUri[petStage];
         else if (s_tokenIdToPetState[tokenId] == PetState.LETHARGIC)
-            imageURI = s_lethargicImageUri;
+            imageURI = s_lethargicImageUri[petStage];
         return
             string(
                 abi.encodePacked(
@@ -725,10 +745,14 @@ contract Tamagotchi is
     ) internal view returns (uint256) {
         uint256 decay = (decayRatePerSecond *
             (block.timestamp - _lastTimestamp)) / DECAY_PRECISION;
-        return _max(stateLevel - decay, 0);
+        if (decay >= stateLevel) {
+            return 0;
+        } else {
+            return stateLevel - decay;
+        }
     }
 
-    function _applyDeathStage(
+    function _applyDeathState(
         uint256 tokenId,
         uint256 timestamp,
         uint256 toleranceInterval,
@@ -736,7 +760,7 @@ contract Tamagotchi is
         uint256 _lastTimestamp
     ) internal returns (bool) {
         if (stateLevel == 0 && timestamp - _lastTimestamp > toleranceInterval) {
-            s_tokenIdToPetStage[tokenId] = PetStage.DEAD;
+            s_tokenIdToPetState[tokenId] = PetState.DEAD;
             emit PetDied(tokenId, timestamp);
             return true;
         } else return false;
@@ -780,13 +804,10 @@ contract Tamagotchi is
         return chosenState;
     }
 
-    function _chooseStage(
-        uint256 age,
-        uint256 _deathAge
-    ) internal pure returns (PetStage) {
+    function _chooseStage(uint256 age) internal pure returns (PetStage) {
         if (age <= 3) return PetStage.BABY;
-        if (age > 3 && age <= _deathAge) return PetStage.ADULT;
-        return PetStage.DEAD;
+        if (age > 3 && age <= 5) return PetStage.TEEN;
+        return PetStage.ADULT;
     }
 
     function _max(uint256 a, uint256 b) internal pure returns (uint256) {
@@ -803,8 +824,8 @@ contract Tamagotchi is
         PetStage stage
     ) internal pure returns (string memory) {
         if (stage == PetStage.BABY) return "Baby";
+        if (stage == PetStage.TEEN) return "TEEN";
         if (stage == PetStage.ADULT) return "Adult";
-        if (stage == PetStage.DEAD) return "Dead";
         return "";
     }
 
