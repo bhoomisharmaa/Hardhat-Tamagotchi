@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { Address, Abi } from "viem";
 import { waitForTransactionReceipt } from "wagmi/actions";
 import { useAccount, useWriteContract } from "wagmi";
@@ -48,6 +48,7 @@ export default function PetPage({
   energy,
   petAge,
 }: PetPageProps) {
+  const [isFull, setIsFull] = useState([false, false, false, false, false]);
   const account = useAccount();
   const { writeContractAsync } = useWriteContract();
   const petStageArr = ["BABY", "TEEN", "ADULT"];
@@ -79,6 +80,22 @@ export default function PetPage({
       setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    const tempIsFull = isFull;
+    if (hunger == 100) tempIsFull[0] = true;
+    else tempIsFull[0] = false;
+    if (entertainment == 100) tempIsFull[1] = true;
+    else tempIsFull[1] = false;
+    if (happiness == 100) tempIsFull[2] = true;
+    else tempIsFull[2] = false;
+    if (cleanliness == 100) tempIsFull[3] = true;
+    else tempIsFull[3] = false;
+    if (energy == 100) tempIsFull[4] = true;
+    else tempIsFull[4] = false;
+
+    setIsFull(tempIsFull);
+  }, [happiness, hunger, cleanliness, entertainment, energy]);
 
   useEffect(() => {
     setIsLoading(false);
@@ -120,6 +137,7 @@ export default function PetPage({
             <div className="flex items-center gap-2 font-tiny5 mt-4">
               {actions.map((action, index) => (
                 <button
+                  disabled={petStageArr[petStage] == "DEAD" || isFull[index]}
                   key={index}
                   onClick={() => handleInteraction(action.toLowerCase())}
                   className="bg-blue-grey sm:px-3 sm:py-1 px-2 py-1 sm:border-2 border-1 sm:rounded-2xl rounded-md md:text-xl sm:text-sm xs:text-xs text-[7px]"
