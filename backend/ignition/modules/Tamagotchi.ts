@@ -117,6 +117,5 @@ export default buildModule("Tamagotchi", (m) => {
       subscriptionId!,
       tamagotchi,
     ]);
-  m.call(tamagotchi, "requestRandomWords", []);
   return { tamagotchi };
 });
