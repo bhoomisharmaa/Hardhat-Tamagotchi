@@ -23,6 +23,7 @@ type ContractConfig = {
 function App() {
   const [contractConfig, setContractConfig] = useState<ContractConfig>();
   const [isLoading, setIsLoading] = useState(false);
+  const [hasPet, setHasPet] = useState(false);
   const [imageUri, setimageUri] = useState("");
   const [happiness, setHappiness] = useState(0);
   const [hunger, setHunger] = useState(0);
@@ -43,6 +44,7 @@ function App() {
     ...contractConfig,
     functionName: "getOwnerToTokenId",
     chainId,
+    account: address,
   });
 
   const { data: petName, refetch: refetchPetName } = useReadContract({
@@ -80,6 +82,14 @@ function App() {
     chainId,
   });
 
+  const { data: ownerOfTokenId0, refetch: refetchOwnerOfTokenId0 } =
+    useReadContract({
+      ...contractConfig,
+      functionName: "ownerOf",
+      args: [0],
+      chainId,
+    });
+
   const { data: petAge, refetch: refetchPetAge } = useReadContract({
     ...contractConfig,
     functionName: "getTokenIdToPetsAge",
@@ -96,6 +106,7 @@ function App() {
     refetchPetState();
     refetchPetStats();
     refetchPetAge();
+    refetchOwnerOfTokenId0();
   };
 
   useEffect(() => {
@@ -106,6 +117,14 @@ function App() {
   useEffect(() => {
     refetchData();
   }, [contractConfig, chainId, tokenId, address]);
+
+  useEffect(() => {
+    if (tokenId == 0) {
+      if (String(ownerOfTokenId0)?.toLowerCase() === address?.toLowerCase())
+        setHasPet(true);
+      else setHasPet(false);
+    } else setHasPet(true);
+  }, [tokenId, address]);
 
   useEffect(() => {
     if (!petStats) return;
@@ -143,9 +162,7 @@ function App() {
       <Routes>
         <Route
           path="/"
-          element={
-            <HomePage petName={petName as string} setIsLoading={setIsLoading} />
-          }
+          element={<HomePage hasPet={hasPet} setIsLoading={setIsLoading} />}
         />
         <Route
           path="/name"
@@ -157,7 +174,7 @@ function App() {
               setIsLoading={setIsLoading}
               config={config}
               chainId={chainId}
-              petName={petName as string}
+              hasPet={hasPet}
             />
           }
         />
@@ -182,6 +199,7 @@ function App() {
               entertainment={entertainment}
               energy={energy}
               petAge={petAge as number}
+              hasPet={hasPet}
             />
           }
         />

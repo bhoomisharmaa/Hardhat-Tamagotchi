@@ -17,7 +17,7 @@ interface NamePageProps {
   isLoading: boolean;
   setIsLoading: (loading: boolean) => void;
   chainId: 11155111 | 31337;
-  petName: string;
+  hasPet: boolean;
 }
 
 export default function NamePage({
@@ -27,7 +27,7 @@ export default function NamePage({
   isLoading,
   setIsLoading,
   chainId,
-  petName,
+  hasPet,
 }: NamePageProps) {
   const [balance, setBalance] = useState("0");
   const [index, setIndex] = useState(0);
@@ -64,7 +64,7 @@ export default function NamePage({
   };
 
   useEffect(() => {
-    if (petName) {
+    if (hasPet) {
       setIndex(Math.floor(Math.random() * 3));
     }
     setIsLoading(false);
@@ -82,7 +82,7 @@ export default function NamePage({
     <div className="h-screen w-screen bg-(--color-alice-blue) flex items-center justify-center font-tiny5">
       {isLoading ? (
         <LoadingPage />
-      ) : petName ? (
+      ) : hasPet ? (
         <p className="md:text-3xl sm:text-2xl text-xl">
           {alreadyMinted[index]}
         </p>

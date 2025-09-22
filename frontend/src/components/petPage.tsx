@@ -27,6 +27,7 @@ interface PetPageProps {
   entertainment: number;
   energy: number;
   petAge: number;
+  hasPet: boolean;
 }
 
 export default function PetPage({
@@ -47,6 +48,7 @@ export default function PetPage({
   entertainment,
   energy,
   petAge,
+  hasPet,
 }: PetPageProps) {
   const [isFull, setIsFull] = useState([false, false, false, false, false]);
   const account = useAccount();
@@ -105,6 +107,10 @@ export default function PetPage({
     <div className="h-screen w-screen bg-alice-blue flex items-center justify-center font-tiny5">
       {isLoading ? (
         <LoadingPage />
+      ) : !hasPet ? (
+        <p className="md:text-3xl sm:text-2xl text-xl">
+          You really tried to skip adoption? Shame.
+        </p>
       ) : (
         <div className="h-max w-max md:p-6 sm:p-4 p-3 sm:border-3 border-2">
           <div className="h-max w-max sm:border-3 border-2 border-dashed md:px-10 md:py-7 sm:px-6 sm:py-4 px-3 py-2 flex flex-col sm:gap-6 gap-1 items-center font-pressStart">

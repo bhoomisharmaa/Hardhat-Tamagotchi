@@ -5,10 +5,10 @@ import { useNavigate } from "react-router-dom";
 import { useAccount } from "wagmi";
 
 export default function HomePage({
-  petName,
+  hasPet,
   setIsLoading,
 }: {
-  petName: string;
+  hasPet: boolean;
   setIsLoading: (loading: boolean) => void;
 }) {
   const [showHowToPlay, setShowHowToPlay] = useState(false);
@@ -34,9 +34,7 @@ export default function HomePage({
               <button
                 onClick={() => {
                   setIsLoading(true);
-                  setTimeout(() => {
-                    navigate(petName ? "/pet" : "/name");
-                  }, 800);
+                  navigate(hasPet ? "/pet" : "/name");
                 }}
                 className="sm:text-2xl border-2 px-4 py-1.5 rounded-xl"
               >
