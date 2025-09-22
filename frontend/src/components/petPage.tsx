@@ -137,7 +137,7 @@ export default function PetPage({
             <div className="flex items-center gap-2 font-tiny5 mt-4">
               {actions.map((action, index) => (
                 <button
-                  disabled={petStageArr[petStage] == "DEAD" || isFull[index]}
+                  disabled={petStateArr[petState] == "DEAD" || isFull[index]}
                   key={index}
                   onClick={() => handleInteraction(action.toLowerCase())}
                   className="bg-blue-grey sm:px-3 sm:py-1 px-2 py-1 sm:border-2 border-1 sm:rounded-2xl rounded-md md:text-xl sm:text-sm xs:text-xs text-[7px]"

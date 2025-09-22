@@ -28,6 +28,10 @@ button {
   cursor: pointer;
 }
 
+button:disabled {
+  cursor: auto;
+}
+
 ul {
   list-style-type: square;
   margin-left: 0;
